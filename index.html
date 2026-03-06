@@ -1,11 +1,102 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0; URL=setup.html" />
-    <title>Redirecting…</title>
-  </head>
-  <body>
-    <p>Loading…</p>
-  </body>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teacher Lab｜教室座席表アプリ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      background: #f8fafc;
+      color: #1e293b;
+      text-align: center;
+      padding: 40px 16px;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .sub {
+      font-size: 16px;
+      color: #475569;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 24px;
+      background: #22c55e;
+      color: #fff;
+      font-weight: 700;
+      border-radius: 12px;
+      text-decoration: none;
+      margin: 8px;
+    }
+
+    .btn.secondary {
+      background: #334155;
+    }
+
+    .section {
+      margin-top: 48px;
+      text-align: left;
+      background: #fff;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    ul {
+      line-height: 1.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="logo">Teacher Lab</div>
+    <div class="sub">教室の座席表を、かんたん・キレイに作るアプリ</div>
+
+    <a class="btn" href="setup.html">座席表を作る（設定画面へ）</a>
+    <a class="btn secondary" href="#guide">使い方ガイドを見る</a>
+
+    <div id="guide" class="section">
+      <h2>使い方ガイド</h2>
+      <ul>
+        <li><b>① 名簿を用意</b>（Excel または CSV）</li>
+        <li><b>② 「設定画面」（setup.html）に名簿を読み込む</b></li>
+        <li><b>③ 行数・列数を設定し保存</b></li>
+        <li><b>④ 座席表画面で「ランダムで割り当て」ボタンを押す</b></li>
+        <li><b>⑤ 必要に応じて CSV として保存、印刷も可能</b></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>主な機能</h2>
+      <ul>
+        <li>名簿（Excel/CSV）から自動で生徒情報を読み込み</li>
+        <li>過去の席と被りにくい割り当てアルゴリズム</li>
+        <li>固定席の指定（クリックでオン/オフ）</li>
+        <li>A4印刷に最適化したレイアウト</li>
+        <li>180°反転（先生視点 / 生徒視点）対応</li>
+      </ul>
+    </div>
+
+  </div>
+</body>
 </html>
