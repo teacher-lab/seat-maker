@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>座席｜教室座席（割り当て）</title>
+
+<!-- 厳格CSP（ローカル完結・外部送信なし／インラインJS・CSS可） -->
+<meta http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src  'self' 'unsafe-inline';
+        style-src   'self' 'unsafe-inline';
+        img-src     'self' data:;
+        font-src    'self';
+        connect-src 'none';
+        form-action 'self';
+        frame-ancestors 'none';
+        base-uri 'self';
+        object-src 'none';
+        worker-src 'self';
+      ">
+
+<style>
+:root{
+  --seatW: 96px;
+  --ratio: 1.80;
+  --gap: 16px;
+  --deskGap: 12px;  /* ★ 画面の教卓⇔座席ギャップ（狭め） */
+  --borderW: 2px;
+  --nameChars: 6;
+  --kanaScale: 0.82;
+  --cols: 6;
+
+  /* フルスクリーン時のCTA対策（JSで実測反映） */
+  --fsCtaH: 56px;
+  --fsCtaGap: 24px;
+}
+
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  background:#fff;
+  color:#0F172A;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;
+}
+
+/* ヘッダー／フッター（印刷では非表示） */
+header,footer{ position:sticky; background:#fff; z-index:10; }
+header{
+  top:0;
+  border-bottom:1px solid #E5E7EB;
+  padding:10px 14px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+header .title{ font-weight:800; }
+header .spacer{ flex:1; }
+header .btn{
+  border:1px solid #E5E7EB;
+  background:#fff;
+  border-radius:10px;
+  padding:8px 12px;
+  cursor:pointer;
+  text-decoration:none;
+  color:inherit;
+  display:inline-block;
+}
+header .btn.toggled{
+  background:#DCFCE7;
+  border-color:#86EFAC;
+  color:#065F46;
+  font-weight:700;
+}
+header a.link{
+  color:#2563eb; text-decoration:none; border:1px solid #E5E7EB;
+  padding:8px 12px; border-radius:10px;
+}
+
+/* 全画面時はヘッダーを隠す */
+:fullscreen header{ display:none !important; }
+
+main{ padding:12px; }
+.wrap{
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:center;
+}
+
+/* タブ */
+.tabs{ display:flex; gap:8px; border-bottom:1px solid #E5E7EB; align-self:stretch; }
+.tab{
+  padding:6px 10px; border:1px solid #E5E7EB; border-bottom:0; background:#F8FAFC;
+  border-top-left-radius:8px; border-top-right-radius:8px; cursor:pointer; font-size:13px;
+}
+.tab.active{ background:#fff; border-color:#A7F3D0; color:#065F46; font-weight:700; }
+
+/* 画面用メッセージ */
+.msg{ margin:8px 0; padding:8px 10px; border-radius:8px; font-size:13px; }
+.msg.info{ background:#F8FAFC; border:1px solid #E2E8F0; color:#0F172A; }
+.msg.warn{ background:#FFFBEB; border:1px solid #FBBF24; color:#92400E; }
+
+/* 教卓（上下のどちらかに配置） */
+.deskArea{
+  display:grid;
+  justify-content:center;
+  grid-template-columns: repeat(var(--cols), var(--seatW));
+  grid-auto-rows: calc(var(--seatW) / var(--ratio) * 0.6667);
+  grid-gap:var(--gap);
+  width:100%;
+}
+#deskTop{ margin-bottom: var(--deskGap); }
+#deskBottom{ margin-top: var(--deskGap); }
+.deskCell{
+  border:var(--borderW) solid #1F2937;
+  border-radius:10px;
+  background:#ECFDF5;
+  color:#14532D;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+}
+
+/* 座席グリッド */
+.grid{
+  display:grid;
+  grid-gap:var(--gap);
+  justify-content:center;
+  position:relative;
+  align-self:center;
+}
+.grid[data-balance="on"]{
+  grid-template-columns: repeat(var(--cols), var(--seatW));
+  grid-auto-rows: calc(var(--seatW) / var(--ratio));
+}
+.seatBox{
+  position:relative;
+  width:var(--seatW);
+  height:calc(var(--seatW) / var(--ratio));
+  overflow:visible;
+  z-index:0;
+}
+.seat{
+  position:absolute; inset:0;
+  border:var(--borderW) solid #1F2937;
+  border-radius:10px;
+  background:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; user-select:none; overflow:hidden; z-index:1; padding:2px;
+}
+.seat.blocked{
+  /* 画面時はライトグレーのハッチ */
+  background:repeating-linear-gradient(45deg,#CBD5E1,#CBD5E1 3px,#E5E7EB 3px,#E5E7EB 6px);
+}
+
+/* バッジ（枠外左上） */
+.badge{
+  position:absolute; left:-12px; top:-12px;
+  min-width:24px; height:24px; padding:0 6px; border-radius:999px;
+  background:#111827; color:#fff; font-weight:800; font-size:12px;
+  display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:5;
+}
+
+/* テキスト */
+.name{ font-size:calc(var(--seatW) / var(--nameChars)); line-height:1.0; white-space:nowrap; }
+.kana{ font-size:calc(var(--seatW) / var(--nameChars) * var(--kanaScale)); line-height:1.0; color:#334155; white-space:nowrap; }
+.grid .seat .kana{ margin-top: 4px; } /* 名前とふりがなの間隔：常に4px */
+
+/* ★割り当て前の席番号表示（割り当て後は非表示） */
+.seatnum{
+  font-size:calc(var(--seatW)*0.18);
+  color:#64748B; line-height:1;
+}
+
+/* フッター（画面時） */
+footer{ bottom:0; border-top:1px solid #E5E7EB; padding:10px 14px; background:#fff; }
+.cta{
+  width:100%; max-width:1200px; display:block; margin:0 auto;
+  background:#22C55E; color:#fff; padding:12px; border:none; border-radius:12px; font-weight:800; font-size:16px; cursor:pointer;
+}
+
+/* ========= 印刷（A4横・余白なし前提 + 視認性 + 上下オフセット + 教卓上余白） ========= */
+@page{ size: A4 landscape; margin: 0; } /* ★ 余白なし前提 */
+@media print{
+  *{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  header, footer, .tabs, .msg, .btn, a.link { display:none !important; }
+  body{ background:#fff }
+
+  main{ padding:0 !important; }
+  .wrap{
+    max-width:none !important; width:auto !important; margin:0 auto !important;
+    display:flex !important; flex-direction:column !important;
+    justify-content:flex-start !important; /* ★ 上詰め（教卓上余白を有効化） */
+    min-height: 210mm !important; /* 余白0mmなので用紙高さをそのまま基準に */
+    gap: 6px !important;
+  }
+  #grid, #deskTop, #deskBottom{
+    margin:0 auto !important;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+
+  /* 印刷用の基本ギャップ＋上下オフセット＋教卓“上”余白（CSS宣言） */
+  :root{
+    --deskGap: 50px;                 /* 基本ギャップ */
+    --printSeatOffsetTop: 16px;      /* 通常シート：座席を下へ */
+    --printSeatOffsetBottom: 16px;   /* 回転シート：座席を上へ（下側ギャップ加算） */
+    --printAboveDesk: 10mm;          /* ★ 教卓“上”の固定余白（余白なし設定でも確保） */
+  }
+  /* 通常シート：教卓(上)の上に固定余白＋教卓→座席の間を拡げる */
+  #deskTop{
+    margin-top: var(--printAboveDesk) !important;
+    margin-bottom: calc(var(--deskGap) + var(--printSeatOffsetTop)) !important;
+  }
+  /* 回転シート：座席→教卓(下)の間に固定余白を加算（＝座席が上へ逃げる） */
+  #deskBottom{
+    margin-top: calc(var(--deskGap) + var(--printSeatOffsetBottom) + var(--printAboveDesk)) !important;
+  }
+
+  /* バッジの視認性UP：黒文字／白丸＋黒枠 */
+  .seat{ z-index:1 !important; }
+  .badge{
+    z-index: 100 !important;
+    background: #fff !important; color:#000 !important; border:2px solid #000 !important;
+    border-radius:9999px !important;
+    min-width:28px !important; height:28px !important; font-size:14px !important;
+    left:-14px !important; top:-14px !important;
+    display:flex !important; align-items:center !important; justify-content:center !important; padding:0 6px !important;
+  }
+
+  /* 固定席：黒ハッチ（文字背面） */
+  .seat.blocked{ background:#fff !important; }
+  .seat.blocked::before{
+    content:""; position:absolute; inset:0; z-index:1;
+    background: repeating-linear-gradient(45deg, rgba(0,0,0,0.28) 0 2px, transparent 2px 4px);
+  }
+  .seat .name, .seat .kana{
+    position:relative; z-index:2; color:#000 !important;
+    text-shadow: 0 0 0.8px #fff; /* 白縁で潰れ防止 */
+  }
+  .seat .kana{ margin-top:4px !important; }
+}
+
+/* ========= 印刷用クラス（内部調整） ========= */
+.printing main{ padding:0 !important; }
+.printing .wrap{
+  max-width:none !important; width:auto !important; margin:0 auto !important;
+  display:flex !important; flex-direction:column !important; justify-content:flex-start !important; /* 上詰め */
+  min-height: 210mm !important;
+}
+
+/* ===== 全画面（CTAと重ならない） ===== */
+:fullscreen main{ padding:0 !important; }
+:fullscreen .wrap{
+  max-width:none !important; width:100vw !important; height:100vh !important; margin:0 !important;
+  display:flex !important; flex-direction:column !important; justify-content:center !important;
+  padding-bottom: calc(var(--fsCtaH) + var(--fsCtaGap) + env(safe-area-inset-bottom));
+}
+:fullscreen .tabs, :fullscreen .msg { display:none !important; }
+:fullscreen footer{
+  position:fixed !important; left:0; right:0; bottom:16px;
+  background:transparent !important; border:0 !important; padding:0 !important; z-index:20;
+}
+:fullscreen footer .cta{
+  display:inline-flex; align-items:center; gap:8px;
+  position:absolute; right: calc(16px + env(safe-area-inset-right));
+  bottom: calc(0px + env(safe-area-inset-bottom));
+  margin:0; padding:12px 16px; border-radius:12px;
+  background:#22C55E; color:#fff; font-weight:800; box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+
+/* 互換用（手動クラス .fs） */
+.fs main{ padding:0 !important; }
+.fs .wrap{
+  max-width:none !important; width:100vw !important; height:100vh !important; margin:0 !important;
+  display:flex !important; flex-direction:column !important; justify-content:center !important;
+  padding-bottom: calc(var(--fsCtaH) + var(--fsCtaGap) + env(safe-area-inset-bottom));
+}
+.fs .tabs, .fs .msg { display:none !important; }
+.fs footer{
+  position:fixed !important; left:0; right:0; bottom:16px;
+  background:transparent !important; border:0 !important; padding:0 !important; z-index:20;
+}
+.fs footer .cta{
+  display:inline-flex; align-items:center; gap:8px;
+  position:absolute; right: calc(16px + env(safe-area-inset-right));
+  bottom: calc(0px + env(safe-area-inset-bottom));
+  margin:0; padding:12px 16px; border-radius:12px;
+  background:#22C55E; color:#fff; font-weight:800; box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">座席（割り当て）</div>
+  <div class="spacer"></div>
+  <!-- 戻るリンク（開始タグありで崩れ防止） -->
+  <a class="link" href="setup.html">設定に戻る</a>
+  <button id="btnBadge" class="btn" title="出席番号バッジの表示/非表示を切替">🔢 バッジ表示</button>
+  <button id="btnFit" class="btn">↔ 自動フィット（画面）</button>
+  <button id="btnFull" class="btn">🖥 全画面</button>
+  <button id="btnCsv" class="btn">📄 座席データ保存</button>
+  <button id="btnCsvImport" class="btn">⬆ 座席データ読込</button>
+  <input id="fileCsvImport" type="file" accept=".csv,text/csv" style="display:none">
+  <button id="btnPrint" class="btn">🖨 印刷（A4横）</button>
+</header>
+
+<main>
+  <div class="wrap">
+    <!-- タブ -->
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-view="normal">通常シート</div>
+      <div class="tab" data-view="rotated">180°回転シート</div>
+    </div>
+
+    <!-- 画面用メッセージ -->
+    <div id="msgPanel"  class="msg info"  style="display:none"></div>
+    <div id="warnPanel" class="msg warn"  style="display:none"></div>
+
+    <!-- 教卓＋座席表 -->
+    <div id="deskTop" class="deskArea"></div>
+    <div id="grid" class="grid" data-balance="on"></div>
+    <div id="deskBottom" class="deskArea"></div>
+  </div>
+</main>
+
+<footer>
+  <button id="btnAssign" class="cta">ランダムで割り当て</button>
+</footer>
+
+<script>
+/* ========== ユーティリティ ========== */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
+
+/* ========== ストレージ／状態 ========== */
+const STORAGE = { SETUP:'class_setup_v7', HISTORY:'class_assign_history_v11' };
+const SESSION = { ROSTER:'class_roster_session_v1' };
+
+let setup = {
+  rows:5, cols:6, seatSize:96, seatRatio:1.80,
+  deskGap:12, /* ★ 画面の教卓⇔座席ギャップ */
+  gapPx:16,
+  avoidSame:true, retentionDays:30, rosterText:'', showBadge:true
+};
+let blocked = new Set();     // 表示座標IDで管理（固定席）
+let assignment = {};         // 表示座標ID -> 学生オブジェクト
+let view = 'normal';         // normal / rotated
+
+/* ========== 設定 I/O（常に最新） ========== */
+function loadSetupLatest(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORAGE.SETUP) || '{}') || {};
+    setup.rows      = clamp(parseInt(s.rows ?? setup.rows, 10) || setup.rows, 1, 50);
+    setup.cols      = clamp(parseInt(s.cols ?? setup.cols, 10) || setup.cols, 1, 50);
+    setup.seatSize  = clamp(parseInt(s.seatSize ?? setup.seatSize, 10) || setup.seatSize, 24, 160);
+    setup.seatRatio = clamp(parseFloat(s.seatRatio ?? setup.seatRatio) || setup.seatRatio, 1.2, 2.4);
+    setup.deskGap   = clamp(parseInt(s.deskGap   ?? setup.deskGap, 10) || setup.deskGap, 0, 100);
+    setup.gapPx     = clamp(parseInt(s.gapPx     ?? setup.gapPx,   10) || setup.gapPx,   0, 40);
+    setup.avoidSame = !!(s.avoidSame ?? setup.avoidSame);
+    setup.retentionDays = clamp(parseInt(s.retentionDays ?? setup.retentionDays, 10) || setup.retentionDays, 1, 365);
+    setup.showBadge = !!(s.showBadge ?? setup.showBadge);
+  }catch{}
+  // 名簿はセッションから
+  setup.rosterText = sessionStorage.getItem(SESSION.ROSTER) || '';
+}
+function saveSetupShowBadge(){
+  try{
+    const current = JSON.parse(localStorage.getItem(STORAGE.SETUP) || '{}') || {};
+    current.showBadge = setup.showBadge;
+    localStorage.setItem(STORAGE.SETUP, JSON.stringify(current));
+  }catch{}
+}
+
+/* ========== 名簿パース（重複排除なし・行ごとにid付与） ========== */
+function parseRoster(){
+  const lines = (setup.rosterText || '')
+    .split('\n').map(s => s.trim()).filter(Boolean);
+
+  const out = [];
+  let tempNoBase = 1000; // no が無い場合の便宜バッジ番号
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const parts = line.split(/[\t,，]/).map(x => x.trim());
+
+    let no = null, name = '', kana = '';
+    if (parts.length >= 3) {
+      no = parseInt((parts[0] || '').replace(/[^0-9]/g,''), 10) || null;
+      name = parts[1] || '';
+      kana = parts.slice(2).join(' ') || '';
+    } else if (parts.length === 2) {
+      const n0 = (parts[0] || '').replace(/[^0-9]/g,'');
+      if (n0) { no = parseInt(n0,10); name = parts[1] || ''; }
+      else    { name = parts[0] || ''; kana = parts[1] || ''; }
+    } else if (parts.length === 1) {
+      name = parts[0] || '';
+    }
+
+    // 従来互換の“前回回避用キー”：no があれば no:XX、無ければ name:氏名
+    const key = (no != null && Number.isInteger(no)) ? `no:${no}` : `name:${name}`;
+    // 行に基づく一意ID（将来拡張の布石。現状の割当はオブジェクトをそのまま持つ設計）
+    const id  = `s${i+1}`;
+
+    const stu = { id, key, no: (Number.isInteger(no) ? no : null), name, kana };
+    if (stu.no == null) stu.tempNo = tempNoBase++;
+    out.push(stu);
+  }
+  return out;
+}
+
+/* ========== 座標 ========== */
+const idOf   = (r,c)=> r*setup.cols + c + 1;
+const rcOf   = (id)=>{ const i=id-1; return { r:Math.floor(i/setup.cols), c:i%setup.cols }; };
+const rotateId = (id)=>{ const {r,c}=rcOf(id); const rr=setup.rows-1-r; const cc=setup.cols-1-c; return idOf(rr,cc); };
+const mapByView = (id0) => (view==='normal' ? id0 : rotateId(id0));
+
+/* ========== 見た目反映 ========== */
+function applyVars(){
+  document.documentElement.style.setProperty('--seatW',  `${setup.seatSize}px`);
+  document.documentElement.style.setProperty('--ratio',  `${setup.seatRatio}`);
+  document.documentElement.style.setProperty('--deskGap',`${setup.deskGap}px`);
+  document.documentElement.style.setProperty('--gap',    `${setup.gapPx}px`);
+  document.documentElement.style.setProperty('--cols',   `${setup.cols}`);
+  document.title = `座席｜${setup.rows}×${setup.cols}`;
+}
+
+/* 教卓（上下のどちらかに配置） */
+function buildDesk(){
+  const top=$('#deskTop'), bottom=$('#deskBottom');
+  top.innerHTML=''; bottom.innerHTML='';
+  [top,bottom].forEach(el=> el.style.gridTemplateColumns=`repeat(${setup.cols}, var(--seatW))`);
+  const desk=document.createElement('div'); desk.className='deskCell'; desk.textContent='教卓';
+  if(setup.cols % 2 === 0){ desk.style.gridColumn = `${setup.cols/2} / span 2`; }
+  else { const start = Math.floor(setup.cols/2) + 1; desk.style.gridColumn = `${start} / span 1`; }
+
+  if(view==='normal'){
+    top.appendChild(desk);
+    top.style.marginBottom = `var(--deskGap)`;
+    bottom.style.marginTop  = `0px`;
+  }else{
+    bottom.appendChild(desk);
+    bottom.style.marginTop  = `var(--deskGap)`;
+    top.style.marginBottom  = `0px`;
+  }
+}
+
+/* 座席（割り当て前は席番号、割り当て後は名前＋かな／空席は空） */
+function buildGrid(){
+  const grid=$('#grid'); grid.innerHTML='';
+  grid.style.gridTemplateColumns = `repeat(${setup.cols}, var(--seatW))`;
+
+  const hasAssigned = Object.keys(assignment).length > 0;
+  const N=setup.rows*setup.cols;
+  for(let id0=1; id0<=N; id0++){
+    const box=document.createElement('div'); box.className='seatBox';
+    const div=document.createElement('div'); div.className='seat';
+
+    const mappedId = mapByView(id0);
+    const stu = assignment[mappedId];
+    const isBlocked = blocked.has(mappedId);
+    if(isBlocked) div.classList.add('blocked');
+
+    if(stu){
+      // 割り当て後：名前＋かな（席番号は出さない）
+      if(setup.showBadge){
+        const att = (stu.no!=null? String(stu.no) : (stu.tempNo? String(stu.tempNo):''));
+        if(att){
+          const badge=document.createElement('div'); badge.className='badge'; badge.textContent=att;
+          box.appendChild(badge);
+        }
+      }
+      div.innerHTML = `<div class="name">${stu.name||''}</div><div class="kana">${stu.kana||''}</div>`;
+    }else{
+      // 学生がいない席
+      if(!hasAssigned){
+        // ★ 割り当て前のみ：席の中に席番号を表示
+        div.innerHTML = `<div class="seatnum">${id0}</div>`;
+      }else{
+        // 割り当て後は空（席番号も出さない）
+        div.innerHTML = '';
+      }
+    }
+
+    // クリック：固定切替（席のブロック/解除）
+    div.addEventListener('click', ()=>{
+      if(blocked.has(mappedId)) blocked.delete(mappedId); else blocked.add(mappedId);
+      buildGrid();
+    });
+
+    box.appendChild(div);
+    grid.appendChild(box);
+  }
+  fitKanaOneLine();
+}
+
+/* ふりがなを1行に収める */
+function fitKanaOneLine(){
+  const seatW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--seatW')) || setup.seatSize;
+  const maxW = seatW - 8;
+  $$('.seat .kana').forEach(el=>{
+    const base = parseFloat(getComputedStyle(el).fontSize) || (seatW/6*0.82);
+    el.style.fontSize = base + 'px'; el.style.whiteSpace='nowrap';
+    if(el.scrollWidth > maxW){
+      const scale = maxW / el.scrollWidth;
+      const newSize = Math.max(8, Math.floor(base*scale));
+      el.style.fontSize = newSize + 'px';
+    }
+  });
+}
+
+/* 画面用ガイド（印刷では非表示） */
+function showMsg(text){ const el=$('#msgPanel'); el.style.display='block'; el.textContent=text; }
+function hideMsg(){ const el=$('#msgPanel'); el.style.display='none'; el.textContent=''; }
+function showWarn(text){ const el=$('#warnPanel'); el.style.display='block'; el.textContent=text; }
+function hideWarn(){ const el=$('#warnPanel'); el.style.display='none'; el.textContent=''; }
+
+/* 直近席の逆引き（同サイズの最後の割り当てから） */
+function getLastNameToSeat(){
+  const hist=JSON.parse(localStorage.getItem(STORAGE.HISTORY)||'[]');
+  const last=hist.find(h=> h.context?.size===`${setup.rows}x${setup.cols}`);
+  if(!last) return {};
+  const map={};
+  const computeKeyFallback = (stu)=>{
+    if (stu && typeof stu === 'object') {
+      if (typeof stu.key === 'string' && stu.key) return stu.key;
+      const no = parseInt(String(stu.no ?? '').replace(/[^\d]/g,''),10);
+      const name = (stu.name||'').trim();
+      if (Number.isInteger(no) && no>0) return `no:${no}`;
+      if (name) return `name:${name}`;
+    }
+    return '';
+  };
+  Object.entries(last.assignment||{}).forEach(([sid,stu])=>{
+    const k = computeKeyFallback(stu);
+    if (k) map[k]=parseInt(sid,10);
+  });
+  return map;
+}
+
+/* 乱択 */
+function randShuffle(a){
+  const b=a.slice();
+  for(let i=b.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [b[i],b[j]]=[b[j],b[i]];
+  }
+  return b;
+}
+
+/* ランダム割り当て */
+function assignRandom(){
+  const roster=parseRoster();
+  const free=[];
+  for(let r=0;r<setup.rows;r++){
+    for(let c=0;c<setup.cols;c++){
+      const id=idOf(r,c);
+      if(!blocked.has(id)) free.push(id);
+    }
+  }
+  if(roster.length===0){ showMsg('名簿がありません。設定で名簿を読み込んでください。'); return; }
+
+  if(roster.length>free.length){
+    showWarn(`名簿人数（${roster.length}）が空き席（${free.length}）を超えています。先頭から ${free.length} 名のみ配置します。`);
+  }else{
+    hideWarn();
+  }
+
+  const lastMap = setup.avoidSame ? getLastNameToSeat() : {};
+  let best=null, bestConf=1e9;
+  const trials = setup.avoidSame ? 700 : 1;
+
+  for(let t=0;t<trials;t++){
+    const seats=randShuffle(free);
+    const m={}; let conf=0;
+    for(let i=0;i<Math.min(roster.length, free.length);i++){
+      const stu=roster[i];
+      const sid = seats[i];
+      m[sid]=stu;
+      if(setup.avoidSame && lastMap[stu.key]===sid) conf++;
+    }
+    if(conf<bestConf){ bestConf=conf; best=m; }
+    if(bestConf===0) break;
+  }
+
+  assignment = best||{};
+  buildGrid();   // ★ 席番号はここで自動で消える
+  saveHistory();
+}
+
+/* 履歴保存 */
+function saveHistory(){
+  const hist = JSON.parse(localStorage.getItem(STORAGE.HISTORY)||'[]');
+  hist.unshift({
+    createdAt:new Date().toISOString(),
+    context:{size:`${setup.rows}x${setup.cols}`},
+    roster:parseRoster(),
+    blocked:[...blocked],
+    assignment
+  });
+  localStorage.setItem(STORAGE.HISTORY, JSON.stringify(hist));
+}
+
+/* CSV出力（現在のビュー） */
+function exportCSV(){
+  if(Object.keys(assignment).length===0){ return; }
+  const N=setup.rows*setup.cols;
+  const rows=[["席番号","出席番号","氏名","ふりがな"]];
+  for(let id0=1; id0<=N; id0++){
+    const mappedId = (view==='normal')? id0 : rotateId(id0);
+    const stu=assignment[mappedId];
+    const att  = stu? (stu.no!=null? String(stu.no):'') : '';
+    const name = stu? (stu.name||'') : '';
+    const kana = stu? (stu.kana||'') : '';
+    rows.push([String(id0),att,name,kana]);
+  }
+  const csv = rows.map(r=> r.map(v=>{
+    const s=(v||'').replace(/"/g,'""');
+    return /[",\n]/.test(s)? `"${s}"`:s;
+  }).join(',')).join('\n');
+
+  const bom=new Uint8Array([0xEF,0xBB,0xBF]);
+  const blob=new Blob([bom,csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  const ts=new Date(); const pad=n=>String(n).padStart(2,'0');
+  const stamp=`${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}`;
+  a.href=URL.createObjectURL(blob);
+  a.download = (view==='normal'? 'seat_assign':'seat_assign_rotated')+`_${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+/* A4横1枚フィット（印刷前の自動調整：余白0mm前提＋安全係数＋教卓上余白） */
+function autoFitToA4(){
+  const mmToPx = mm => mm * 96 / 25.4;
+  const pageW = mmToPx(297), pageH = mmToPx(210);
+
+  // 余白なし（@page margin:0）前提
+  const margin = 0;
+  const usableW = pageW - margin*2;
+  const usableH = pageH - margin*2;
+
+  // ハード最小余白等の吸収
+  const safety = 0.98; // 必要なら 0.977 まで
+  const effUsableH = usableH * safety;
+
+  const cols = setup.cols, rows = setup.rows, ratio = setup.seatRatio;
+  const deskScale=2/3;
+
+  const extra = (window.printExtraOffsetPx || 0);   // 座席の上下オフセット（通常=下げ／回転=上げ）
+  const above = (window.printAboveDeskPx || 0);     // 教卓“上”の固定余白（px）
+
+  const seatW_byW = (usableW - setup.gapPx*(cols-1)) / cols;
+  const totalGaps = (rows - 1) + 1;
+  const totalStatic = setup.gapPx*totalGaps + setup.deskGap + extra + above; // ★ 加算
+  const seatH_byH = (effUsableH - totalStatic) / (rows + deskScale);
+
+  const seatW = Math.floor(Math.max(24, Math.min(seatW_byW, seatH_byH * ratio)));
+  document.documentElement.style.setProperty('--seatW', seatW+'px');
+  document.documentElement.style.setProperty('--ratio', ratio);
+  buildDesk(); buildGrid();
+}
+
+/* 画面いっぱいに座席を自動フィット（フルスクリーン等） */
+function autoFitToViewport(){
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  const isFS = !!document.fullscreenElement || document.documentElement.classList.contains('fs');
+  let fsCtaH = 0, fsCtaGap = 0;
+  if(isFS){
+    const rootStyle = getComputedStyle(document.documentElement);
+    fsCtaH  = parseFloat(rootStyle.getPropertyValue('--fsCtaH'))  || 0;
+    fsCtaGap= parseFloat(rootStyle.getPropertyValue('--fsCtaGap')) || 0;
+  }
+  const effVh = isFS ? Math.max(0, vh - (fsCtaH + fsCtaGap)) : vh;
+
+  const cols = setup.cols, rows = setup.rows, ratio = setup.seatRatio;
+  const gap = setup.gapPx;
+  const deskScale = 2/3;
+
+  const seatW_byW = (vw - gap*(cols-1)) / cols;
+  const totalGaps = (rows - 1) + 1;
+  const seatH_byH = (effVh - gap*totalGaps - setup.deskGap) / (rows + deskScale);
+
+  const seatW = Math.floor(Math.max(24, Math.min(seatW_byW, seatH_byH * ratio)));
+  document.documentElement.style.setProperty('--seatW', seatW+'px');
+
+  buildDesk();
+  buildGrid();
+}
+
+/* 全画面用：CTA実寸→CSS変数へ */
+function updateFsCtaHeight(){
+  const cta = document.querySelector('footer .cta');
+  if(!cta) return;
+  const rect = cta.getBoundingClientRect();
+  const h = Math.ceil(rect.height);
+  document.documentElement.style.setProperty('--fsCtaH', h + 'px');
+}
+
+/* 最新 setup / roster を反映して再描画 */
+function refreshFromStores(){
+  loadSetupLatest();
+  applyVars();
+  buildDesk();
+  buildGrid();
+
+  const hasRoster = !!setup.rosterText.trim();
+  const btnAssign = document.getElementById('btnAssign');
+  if(btnAssign) btnAssign.disabled = !hasRoster;
+  if(!hasRoster) showMsg('名簿が未設定です。設定へ戻り、名簿（CSV / XLSX）を読み込んでください。');
+  else hideMsg();
+
+  // バッジボタンのUI/ハンドラ
+  const refreshBadgeBtnUI = ()=>{
+    const b = $('#btnBadge');
+    if(!b) return;
+    b.classList.toggle('toggled', !!setup.showBadge);
+    b.textContent = setup.showBadge ? '🔢 バッジ表示：ON' : '🔢 バッジ表示：OFF';
+  };
+  refreshBadgeBtnUI();
+
+  const old = $('#btnBadge');
+  if(old){
+    const cloned = old.cloneNode(true);
+    old.replaceWith(cloned);
+    cloned.addEventListener('click', ()=>{
+      setup.showBadge = !setup.showBadge;
+      saveSetupShowBadge();
+      refreshBadgeBtnUI();
+      buildGrid();
+    });
+  }
+}
+
+/* 初期化 */
+function init(){
+  refreshFromStores();
+
+  // タブ切替
+  $$('#tabs .tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      $$('#tabs .tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      view = tab.dataset.view;
+      buildDesk(); buildGrid();
+    });
+  });
+
+  // CSVエクスポート
+  const btnCsv = document.getElementById('btnCsv');
+  if(btnCsv) btnCsv.addEventListener('click', exportCSV);
+}
+init();
+
+/* ===== 失敗時の保険：印刷終了で確実に復帰／タブ復帰で再描画 ===== */
+window.addEventListener('afterprint', () => {
+  document.documentElement.classList.remove('printing','print-as-screen','fs');
+  // インラインCSS変数の残りを念のため除去
+  const root = document.documentElement;
+  ['--seatW','--ratio','--deskGap','--gap',
+   '--printSeatOffsetTop','--printSeatOffsetBottom','--printAboveDesk'
+  ].forEach(v => root.style.removeProperty(v));
+  if (typeof refreshFromStores==='function') refreshFromStores();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && typeof refreshFromStores==='function') refreshFromStores();
+});
+
+/* ボタン */
+$('#btnAssign').addEventListener('click', assignRandom);
+
+/* ===== 印刷：余白0前提 → 上下オフセット・教卓上余白を適用 → フィット → 印刷 → 復帰 ===== */
+$('#btnPrint').addEventListener('click', () =>{
+  if(Object.keys(assignment).length===0){ return; }
+  document.documentElement.classList.add('printing');
+
+  const PRINT_DESK_GAP = 50;  // 印刷の基本ギャップ
+
+  /* ビュー別の座席オフセット（上下） */
+  const PRINT_SEAT_OFFSET_TOP    = 16; // 通常シート（教卓が上）：座席を下へ
+  const PRINT_SEAT_OFFSET_BOTTOM = 16; // 回転シート（教卓が下）：座席を上へ（下側ギャップ加算）
+
+  /* 教卓“上”の固定余白（mm）→ pxへ換算して計算にも反映 */
+  const PRINT_ABOVE_DESK_MM = 10;      // ★ ご希望の値に（例：8/10/12mm）
+  const mmToPx = mm => mm * 96 / 25.4;
+  const aboveDeskPx = mmToPx(PRINT_ABOVE_DESK_MM);
+
+  // CSS変数の退避
+  const prevCssDeskGap       = getComputedStyle(document.documentElement).getPropertyValue('--deskGap').trim();
+  const prevCssSeatOffsetTop = getComputedStyle(document.documentElement).getPropertyValue('--printSeatOffsetTop').trim();
+  const prevCssSeatOffsetBt  = getComputedStyle(document.documentElement).getPropertyValue('--printSeatOffsetBottom').trim();
+  const prevCssAbove         = getComputedStyle(document.documentElement).getPropertyValue('--printAboveDesk').trim();
+
+  // 見た目に効くCSS変数を印刷用にインライン上書き
+  document.documentElement.style.setProperty('--deskGap', PRINT_DESK_GAP + 'px');
+  document.documentElement.style.setProperty('--printSeatOffsetTop', PRINT_SEAT_OFFSET_TOP + 'px');
+  document.documentElement.style.setProperty('--printSeatOffsetBottom', PRINT_SEAT_OFFSET_BOTTOM + 'px');
+  document.documentElement.style.setProperty('--printAboveDesk', PRINT_ABOVE_DESK_MM + 'mm');
+
+  // 計算用のJS値も揃える
+  const prevDeskGapSetup = setup.deskGap;
+  const prevGapPxSetup   = setup.gapPx;
+  setup.deskGap = PRINT_DESK_GAP;
+  setup.gapPx   = Math.min(setup.gapPx, 12);
+
+  // A4フィットに渡す“ビュー別オフセット”
+  const effOffset = (view === 'normal') ? PRINT_SEAT_OFFSET_TOP : PRINT_SEAT_OFFSET_BOTTOM;
+  window.printExtraOffsetPx = effOffset;
+
+  // 教卓“上”余白（px）
+  window.printAboveDeskPx = aboveDeskPx;
+
+  // 再計算 → 印刷
+  autoFitToA4();
+  setTimeout(()=>{
+    window.print();
+
+    setTimeout(()=>{
+      // 復帰（CSS変数）
+      if(prevCssDeskGap)       document.documentElement.style.setProperty('--deskGap', prevCssDeskGap);
+      else                     document.documentElement.style.removeProperty('--deskGap');
+
+      if(prevCssSeatOffsetTop) document.documentElement.style.setProperty('--printSeatOffsetTop', prevCssSeatOffsetTop);
+      else                     document.documentElement.style.removeProperty('--printSeatOffsetTop');
+
+      if(prevCssSeatOffsetBt)  document.documentElement.style.setProperty('--printSeatOffsetBottom', prevCssSeatOffsetBt);
+      else                     document.documentElement.style.removeProperty('--printSeatOffsetBottom');
+
+      if(prevCssAbove)         document.documentElement.style.setProperty('--printAboveDesk', prevCssAbove);
+      else                     document.documentElement.style.removeProperty('--printAboveDesk');
+
+      // 復帰（JS値）
+      setup.deskGap = prevDeskGapSetup;
+      setup.gapPx   = prevGapPxSetup;
+      window.printExtraOffsetPx = 0;
+      window.printAboveDeskPx   = 0;
+
+      document.documentElement.classList.remove('printing');
+      refreshFromStores();
+    }, 200);
+  }, 50);
+});
+
+/* 画面フィット */
+$('#btnFit').addEventListener('click', () => { autoFitToViewport(); });
+
+/* 全画面対応：入退時に自動フィット＆UI文言切替 */
+let onFSResize = null;
+$('#btnFull').addEventListener('click', () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+});
+document.addEventListener('fullscreenchange', () => {
+  const isFS = !!document.fullscreenElement;
+  $('#btnFull').textContent = isFS ? '🖥 全画面解除' : '🖥 全画面';
+  if(isFS){
+    document.documentElement.classList.add('fs');
+    updateFsCtaHeight();
+    autoFitToViewport();
+    onFSResize = () => { updateFsCtaHeight(); autoFitToViewport(); };
+    window.addEventListener('resize', onFSResize);
+  }else{
+    document.documentElement.classList.remove('fs');
+    if(onFSResize){ window.removeEventListener('resize', onFSResize); onFSResize=null; }
+    refreshFromStores();
+  }
+});
+
+/* 同期：他タブや設定タブでの変更を反映 */
+window.addEventListener('storage', (e)=>{
+  if(e.key===STORAGE.SETUP || e.key===SESSION.ROSTER) refreshFromStores();
+});
+window.addEventListener('focus', refreshFromStores);
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible') refreshFromStores();
+});
+
+/* ======================= 座席データ 読込（ファイル選択） ======================= */
+(function bindCsvImportButton(){
+  const btn = document.getElementById('btnCsvImport');
+  const inp = document.getElementById('fileCsvImport');
+  if(!btn || !inp) return;
+  btn.addEventListener('click', () => inp.click());
+  inp.addEventListener('change', async (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    try{
+      const text = await f.text();
+      importAssignmentFromCsvTextDnD(text);
+    }catch(err){
+      showMsg(String(err||'CSVの読み込みでエラーが発生しました。'));
+      console.error(err);
+    }finally{
+      inp.value = '';
+    }
+  });
+})();
+
+/* ======================= 座席データ DnD 復元 ======================= */
+/** CSV → rows（"..." と "" のエスケープ対応） */
+function parseCsvRowsDnD(text){
+  const lines = text.replace(/\uFEFF/g,'').split(/\r?\n/);
+  const rows = [];
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const out = [];
+    let i=0, cur='', inQ=false;
+    while(i<line.length){
+      const ch=line[i];
+      if(inQ){
+        if(ch === '"'){
+          if(line[i+1] === '"'){ cur+='"'; i+=2; continue; }
+          inQ=false; i++; continue;
+        }
+        cur+=ch; i++; continue;
+      }else{
+        if(ch === '"'){ inQ=true; i++; continue; }
+        if(ch === ','){ out.push(cur.trim()); cur=''; i++; continue; }
+        cur+=ch; i++; continue;
+      }
+    }
+    out.push(cur.trim());
+    rows.push(out);
+  }
+  return rows;
+}
+
+/** 文字列CSV → assignment復元（現在ビューを尊重） */
+function importAssignmentFromCsvTextDnD(text){
+  const rows = parseCsvRowsDnD(text);
+  if(!rows.length) throw new Error('CSVが空です。');
+
+  const seats = setup.rows * setup.cols;
+
+  // ヘッダー判定
+  let start = 0;
+  const header = rows[0].map(s=>s.replace(/\s/g,''));
+  const hasHeader =
+    header.length >= 3 &&
+    /席/.test(header[0]||'') &&
+    /出席|番号/.test(header[1]||'') &&
+    /氏名/.test(header[2]||'');
+  if(hasHeader) start = 1;
+
+  const next = {}; // 表示座標ID -> 学生
+  for(let r=start; r<rows.length; r++){
+    const cols = rows[r];
+    if(cols.length < 3) continue;
+
+    const id0  = parseInt((cols[0]||'').replace(/[^\d]/g,''), 10);
+    const no   = parseInt((cols[1]||'').replace(/[^\d]/g,''), 10);
+    const name = (cols[2]||'').trim();
+    const kana = (cols[3]||'').trim();
+
+    if(!id0 || id0<1 || id0>seats) continue;
+    if(!name) continue; // 空席
+
+    const mappedId = (view === 'normal') ? id0 : rotateId(id0);
+    const key = Number.isFinite(no) && no>0 ? `no:${no}` : (name ? `name:${name}` : '');
+    next[mappedId] = {
+      key,
+      no: Number.isFinite(no) ? no : null,
+      name,
+      kana
+    };
+  }
+
+  assignment = next;
+  buildGrid();
+  saveHistory();
+}
+
+/** DnDバインド（座席表と教卓エリアをドロップゾーンに） */
+(function bindCsvDnD(){
+  const zones = [document.getElementById('grid'), document.getElementById('deskTop'), document.getElementById('deskBottom')].filter(Boolean);
+  const addHint = z => z.classList.add('dragover');
+  const rmHint  = z => z.classList.remove('dragover');
+
+  zones.forEach(zone=>{
+    zone.addEventListener('dragenter', e=>{ e.preventDefault(); addHint(zone); });
+    zone.addEventListener('dragover',  e=>{ e.preventDefault(); addHint(zone); });
+    zone.addEventListener('dragleave', e=>{ e.preventDefault(); rmHint(zone); });
+    zone.addEventListener('drop', async e=>{
+      e.preventDefault(); e.stopPropagation(); rmHint(zone);
+      try{
+        const dt = e.dataTransfer;
+
+        // 1) ファイルがあれば優先（*.csv / text/plain）
+        if(dt.files && dt.files.length){
+          const f = dt.files[0];
+          if(/\.(csv)$/i.test(f.name) || /^text\/(csv|plain)$/i.test(f.type) || !f.type){
+            const text = await f.text();
+            importAssignmentFromCsvTextDnD(text);
+            return;
+          }else{
+            throw new Error('CSVファイルではありません。');
+          }
+        }
+
+        // 2) テキストデータ（スプレッドシート等からのドロップ）
+        const text = dt.getData('text/plain');
+        if(text && /,/.test(text)){ importAssignmentFromCsvTextDnD(text); return; }
+
+        throw new Error('CSVテキスト/ファイルをドロップしてください。');
+
+      }catch(err){
+        showMsg(String(err || 'CSVの読み込みでエラーが発生しました。'));
+        console.error(err);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
