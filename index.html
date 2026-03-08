@@ -2,101 +2,247 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Teacher Lab｜教室座席表アプリ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <title>席替えさん｜教室座席表アプリ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: system-ui, sans-serif;
+    /* ===== Reset ===== */
+    *,*::before,*::after{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body,h1,h2,p{ margin:0; }
+    a{ color:inherit; text-decoration:none; }
+
+    /* ===== Theme tokens ===== */
+    :root{
+      --fg:#0f172a;        /* 文字色 */
+      --fg-weak:#64748b;   /* サブテキスト */
+      --bg:#f6f8fb;        /* 背景 */
+      --border:#0f172a;    /* ボタン枠 */
+      --max:900px;         /* コンテナ幅 */
+      --radius:8px;
+
+      /* タイトル：左画像寄りに少し大きめ（最大108pxまで） */
+      --title: clamp(54px, 9.2vw, 108px);
+      --catch: clamp(13px, 1.8vw, 16px);
+
+      /* ▼ タイトルとボタン（.actions）の隙間：ここだけで調整 */
+      --gap-title-actions: clamp(44px, 6.8vw, 88px);
+
+      /* ボタン（少しだけスリムに） */
+      --btn-minw: 236px;
+      --btn-pad-y: 12px;
+      --btn-pad-x: 20px;
+      --btn-fs: 15px;
+
+      /* 機能説明（コンパクト） */
+      --feat-h: 12px;
+      --feat-label: 12px;
+      --feat-p: 12px;
+      --feat-line: 1.55;
+
+      /* ボタン同士の間隔（やや詰め） */
+      --actions-gap: 14px;
+    }
+
+    @media (prefers-color-scheme: dark){
+      :root{ --fg:#e5e7eb; --fg-weak:#cbd5e1; --bg:#0b0f14; --border:#e5e7eb; }
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--fg);
+      font-family:"Noto Sans JP",system-ui,-apple-system,"Segoe UI",Roboto,
+                  "Helvetica Neue","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+
+    /* ===== Viewport layout ===== */
+    .viewport{
+      min-height:100svh;
+      display:grid;
+      grid-template-rows: 0.60fr 0.40fr;
+    }
+    .container{ max-width:var(--max); margin:0 auto; padding:0 20px; }
+
+    /* ===== Hero ===== */
+    .hero{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center;
+      padding: 6px 0 8px; /* 下余白を少し詰める */
+    }
+    .catch{
+      font-size:var(--catch);
+      letter-spacing:.16em;
+      color:var(--fg-weak);
+      margin-bottom:8px;
+    }
+    .title{
+      font-size:var(--title);
+      font-weight:700;
+      letter-spacing:.03em;
+      line-height:1.03;
+      margin-bottom:0; /* 距離は .actions で管理 */
+    }
+    .actions{
+      display:flex; gap:var(--actions-gap); flex-wrap:wrap; justify-content:center;
+      margin-top: var(--gap-title-actions);
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width: var(--btn-minw);
+      padding: var(--btn-pad-y) var(--btn-pad-x);
+      font-size: var(--btn-fs);
+      font-weight:700;
+      background:transparent;
+      color:var(--fg);
+      border:2px solid var(--border);
+      border-radius:var(--radius);
+      transition:background .14s ease, color .14s ease, transform .06s ease, border-color .14s ease;
+    }
+    .btn:hover{ background:var(--fg); color:#fff; border-color:var(--fg); }
+    .btn:active{ transform:translateY(1px) scale(.995); }
+    .btn:focus-visible{ outline:none; box-shadow:0 0 0 3px rgba(15,23,42,.22); }
+
+    /* ===== Features ===== */
+    .features{
+      display:flex; align-items:flex-start;
+      padding-top: 0; /* ヒーロー直下に詰める */
+    }
+    .features .inner{
+      width:100%;
+      display:grid;
+      grid-template-columns: 1fr 2fr;
+      gap:12px 28px;
+      align-items:start;
+    }
+    .features h2{
+      grid-column:1/-1;
+      font-size:var(--feat-h);
+      letter-spacing:.14em;
+      color:var(--fg-weak);
+      text-align:center;
+      margin-bottom:0;
+    }
+    .labels{ display:grid; gap:8px; }
+    .label{
+      font-size:var(--feat-label);
+      font-weight:700;
+      letter-spacing:.05em;
+      border-left:2px solid var(--border);
+      padding-left:8px;
+      line-height:1.45;
+      white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+    }
+    .desc{
+      display:grid; gap:6px;
+      font-size:var(--feat-p);
+      line-height:var(--feat-line);
+      color:var(--fg);
+    }
+    .desc p{ margin:0; }
+
+    /* ===== 画面が低い場合も詰め具合を維持 ===== */
+    @media (max-height: 760px){
+      :root{ --gap-title-actions: clamp(40px, 6.4vw, 84px); }
+      .viewport{ grid-template-rows: 0.58fr 0.42fr; }
+    }
+    @media (max-height: 700px){
+      :root{ --gap-title-actions: clamp(36px, 6vw, 80px); }
+      .viewport{ grid-template-rows: 0.56fr 0.44fr; }
+    }
+
+    /* ===== 幅が狭い場合 ===== */
+    @media (max-width: 860px){
+      .features .inner{ grid-template-columns:1fr; gap:10px; }
+      .labels{ grid-template-columns:1fr 1fr; gap:8px 12px; }
+      .label{ white-space:normal; }
+    }
+
+    /* ===== Mock image（ページ最下部のイメージ画像） ===== */
+    .mock {
+      margin: 48px auto 40px;     /* 上下の余白 */
+      padding: 0 20px;            /* コンテナと同じ左右余白 */
+      max-width: var(--max);      /* 本文幅に中央寄せ */
+    }
+    .mock figure {
       margin: 0;
-      background: #f8fafc;
-      color: #1e293b;
-      text-align: center;
-      padding: 40px 16px;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
     }
-
-    .container {
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .logo {
-      font-size: 32px;
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
-
-    .sub {
-      font-size: 16px;
-      color: #475569;
-      margin-bottom: 32px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 14px 24px;
-      background: #22c55e;
-      color: #fff;
-      font-weight: 700;
-      border-radius: 12px;
-      text-decoration: none;
-      margin: 8px;
-    }
-
-    .btn.secondary {
-      background: #334155;
-    }
-
-    .section {
-      margin-top: 48px;
-      text-align: left;
+    .mock .frame {
+      width: 100%;
       background: #fff;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;              /* 画像周囲の余白 */
+      box-shadow: 0 6px 18px rgba(15,23,42,.08);
     }
-
-    h2 {
-      margin-top: 0;
+    .mock img {
+      display: block;
+      max-width: 100%;            /* 横幅フィット */
+      height: auto;               /* アスペクト比維持 */
+      border-radius: 8px;
     }
-
-    ul {
-      line-height: 1.8;
+    .mock figcaption {
+      font-size: 12px;
+      color: var(--fg-weak);
+      text-align: center;
+      letter-spacing: .02em;
+    }
+    @media (prefers-color-scheme: dark){
+      .mock .frame{ background: #0b0f14; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
     }
   </style>
 </head>
-
 <body>
+  <div class="viewport">
+    <!-- Hero -->
+    <header class="container hero" role="banner">
+      <p class="catch">席替え“業務”を一瞬で</p>
+      <h1 class="title">席替えさん</h1>
+      <nav class="actions" aria-label="メイン操作">
+        <a class="btn" href="./setup">初期設定</a>
+        <a class="btn" href="./seats">座席データ読み込み</a>
+      </nav>
+    </header>
 
-  <div class="container">
-    <div class="logo">Teacher Lab</div>
-    <div class="sub">教室の座席表を、かんたん・キレイに作るアプリ</div>
-
-    <a class="btn" href="setup.html">座席表を作る（設定画面へ）</a>
-    <a class="btn secondary" href="#guide">使い方ガイドを見る</a>
-
-    <div id="guide" class="section">
-      <h2>使い方ガイド</h2>
-      <ul>
-        <li><b>① 名簿を用意</b>（Excel または CSV）</li>
-        <li><b>② 「設定画面」（setup.html）に名簿を読み込む</b></li>
-        <li><b>③ 行数・列数を設定し保存</b></li>
-        <li><b>④ 座席表画面で「ランダムで割り当て」ボタンを押す</b></li>
-        <li><b>⑤ 必要に応じて CSV として保存、印刷も可能</b></li>
-      </ul>
-    </div>
-
-    <div class="section">
-      <h2>主な機能</h2>
-      <ul>
-        <li>名簿（Excel/CSV）から自動で生徒情報を読み込み</li>
-        <li>過去の席と被りにくい割り当てアルゴリズム</li>
-        <li>固定席の指定（クリックでオン/オフ）</li>
-        <li>A4印刷に最適化したレイアウト</li>
-        <li>180°反転（先生視点 / 生徒視点）対応</li>
-      </ul>
-    </div>
-
+    <!-- Features -->
+    <section class="container features" aria-labelledby="feature-heading">
+      <div class="inner">
+        <h2 id="feature-heading">機能紹介</h2>
+        <div class="labels" aria-label="機能項目">
+          <div class="label">全画面表示モード</div>
+          <div class="label">空席の固定設定</div>
+          <div class="label">180度回転表示</div>
+          <div class="label">一発印刷レイアウト</div>
+          <div class="label">ブラウザ完結で安心</div>
+        </div>
+        <div class="desc">
+          <p>プロジェクターに映して、クラス全員で結果を一目で確認できます。</p>
+          <p>欠席者や教室の構造に合わせた「空席」を自由に配置・固定できます。</p>
+          <p>先生側と生徒側（黒板側）の視点をワンタップで切り替え可能です。</p>
+          <p>A4 最適レイアウトで、印刷してそのまま掲示できます。</p>
+          <p>名簿データは端末内のみで処理され、サーバーへ送信されません。</p>
+        </div>
+      </div>
+    </section>
   </div>
+
+  <!-- Mock image: イメージ画像（ページ最下部） -->
+  <section class="mock" aria-labelledby="mock-heading">
+    <figure>
+      <div class="frame">
+        <!-- ここが決定版：同一階層の seats-preview.png を読み込み -->
+        <img
+          src="./seats-preview.png"
+          alt="座席表のイメージ（通常シートと180°回転シートの切り替え、教卓、各席の名前表示）"
+          width="1000" height="650"
+          loading="lazy"
+        />
+      </div>
+      <figcaption id="mock-heading">イメージ：座席表の表示サンプル</figcaption>
+    </figure>
+  </section>
 </body>
 </html>
