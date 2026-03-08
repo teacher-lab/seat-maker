@@ -5,10 +5,10 @@
   <title>席替えさん｜教室座席表アプリ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- ▼ 外部テーマCSS（参考画像寄せトンマナ） -->
-  <link rel="stylesheet" href="./lib/theme-mint.css?v=2" />
+  <!-- ▼ 外部テーマCSS（グラデなしトンマナ） -->
+  <link rel="stylesheet" href="./lib/theme-mint.css?v=3">
 
-  <!-- ▼ ページ固有のスケール＆レイアウト最小セット（後勝ちでOK） -->
+  <!-- ▼ ページ固有のスケール＆レイアウト（必要最小限） -->
   <style>
     /* Reset（最小） */
     *,*::before,*::after{ box-sizing:border-box; }
@@ -16,26 +16,21 @@
     body,h1,h2,p{ margin:0; }
     a{ color:inherit; text-decoration:none; }
 
-    /* レイアウトの骨格のみ（色や雰囲気は外部CSSに委譲） */
     :root{
-      /* ヒーロー周りのサイズ調整 */
       --title: clamp(54px, 9.2vw, 108px);
       --catch: clamp(13px, 1.8vw, 16px);
       --gap-title-actions: clamp(44px, 6.8vw, 88px);
 
-      /* ボタンのサイズ感 */
       --btn-minw: 236px;
       --btn-pad-y: 12px;
       --btn-pad-x: 20px;
       --btn-fs: 15px;
 
-      /* セクション本文 */
       --feat-h: 12px;
       --feat-label: 12px;
       --feat-p: 12px;
       --feat-line: 1.55;
 
-      /* 中央カラム幅 */
       --max: 960px;
     }
 
@@ -91,19 +86,9 @@
     /* Mock image（最下部のイメージ） */
     .mock { margin: 48px auto 40px; padding: 0 24px; max-width: var(--max); }
     .mock figure { margin: 0; display: grid; gap: 10px; justify-items: center; }
-    .mock .frame { width: 100%; padding: 14px; } /* 枠や影は外部CSSで付与 */
+    .mock .frame { width: 100%; padding: 14px; } /* 枠・影は外部CSS */
     .mock img { display:block; max-width:100%; height:auto; border-radius: 12px; }
     .mock figcaption { font-size:12px; letter-spacing:.02em; text-align:center; }
-
-    /* 高さの低い画面での微調整（任意） */
-    @media (max-height: 760px){
-      :root{ --gap-title-actions: clamp(40px, 6.4vw, 84px); }
-      .viewport{ grid-template-rows: 0.58fr 0.42fr; }
-    }
-    @media (max-height: 700px){
-      :root{ --gap-title-actions: clamp(36px, 6vw, 80px); }
-      .viewport{ grid-template-rows: 0.56fr 0.44fr; }
-    }
 
     /* 幅が狭い場合 */
     @media (max-width: 860px){
@@ -151,11 +136,10 @@
   <section class="mock" aria-labelledby="mock-heading">
     <figure>
       <div class="frame">
-        <!-- GitHub Pages では、このPNGを公開ブランチに必ず配置してください -->
         <img
           src="./seats-preview.png"
           alt="座席表のイメージ（通常シートと180°回転シートの切り替え、教卓、各席の名前表示）"
-          width="1200" height="780" />
+          width="1000" height="650">
       </div>
       <figcaption id="mock-heading">イメージ：座席表の表示サンプル</figcaption>
     </figure>
