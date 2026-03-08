@@ -1,119 +1,212 @@
-/* ====== Tonal Theme: Soft Mint UI ====== */
-/* パレットとトークン（既存の --fg / --bg 等を上書き） */
-:root{
-  --mint-50:#f0f9f4; --mint-100:#e6f5ee; --mint-200:#d3efe3;
-  --mint-300:#b9e7d3; --mint-400:#8fd9bd; --mint-500:#5fcc9f;
-  --mint-600:#39bb88; --mint-700:#2c9b71;
-  --ink-900:#0f172a; --ink-700:#334155; --ink-500:#64748b;
+/* =========================================================
+   Theme: Soft Mint App UI v2（参考画像寄せ）
+   ・淡いミント背景グラデ＋白カード＋極薄枠
+   ・角丸は大きめ（12〜16px）、影はごく控えめ
+   ・主要ボタンは濃いミント実線＋白文字、Pill
+   ・入力欄は緑アクセントのアウトライン＋内側に薄い陰影
+   ========================================================= */
 
-  --bg: var(--mint-50);
+/* ===== 基本パレット（画像の雰囲気に近い控えめミント） ===== */
+:root{
+  /* 背景系（かなり淡いミント → ホワイト） */
+  --mint-50:  #f3faf5;
+  --mint-75:  #eef7f1;
+  --mint-100: #e8f4ed;
+  --mint-200: #dbefe5;
+
+  /* アクセント（ボタン/フォーカス等） */
+  --mint-500: #39bb88;  /* メイン */
+  --mint-600: #2fa772;  /* ホバー */
+  --mint-700: #248a5e;  /* アクティブ/強調 */
+
+  /* テキスト/枠 */
+  --ink-900:  #0f172a; /* 本文 */
+  --ink-700:  #344054; /* 見出し/ラベル */
+  --ink-500:  #667085; /* 補助テキスト */
+  --line:     rgba(17,24,39,.12);
+
+  /* 角丸と影（やわらかい） */
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+  --elev-0:   none;
+  --elev-1:   0 1px 2px rgba(16,24,40,.05);
+  --elev-2:   0 6px 18px rgba(16,24,40,.08);
+
+  /* 従来トークンをこのテーマ色で上書き（あなたの既存CSS互換） */
+  --bg: var(--mint-75);
   --fg: var(--ink-900);
   --fg-weak: var(--ink-500);
-  --border: rgba(16,24,40,.18);
+  --border: var(--line);
 
-  --radius: 12px;
-  --elev-1: 0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.03);
-  --elev-2: 0 6px 18px rgba(16,24,40,.08);
-
+  /* コンポーネント共通 */
   --card-bg: #fff;
-  --card-border: rgba(16,24,40,.14);
+  --card-border: var(--line);
 
-  --btn-solid-bg: var(--mint-600);
-  --btn-solid-bg-hover: var(--mint-700);
+  /* ボタン */
+  --btn-solid-bg: var(--mint-500);
+  --btn-solid-bg-hover: var(--mint-600);
   --btn-solid-fg: #fff;
 
+  /* ゴースト/セカンダリ（右上の小ボタンなど） */
   --btn-ghost-fg: var(--mint-700);
-  --btn-ghost-border: rgba(56,142,108,.35);
-  --btn-ghost-bg-hover: rgba(56,142,108,.08);
+  --btn-ghost-border: rgba(47,167,114,.28);
+  --btn-ghost-bg-hover: rgba(47,167,114,.10);
 
-  --focus-ring: 0 0 0 3px rgba(63,201,150,.28);
-
-  /* あなたの既存トークンも必要ならここへ（--title など） */
+  /* フォーカスリング */
+  --focus-ring: 0 0 0 3px rgba(57,187,136,.28);
 }
 
-/* 背景の淡いグラデ */
+/* ===== ページ背景：上部ごく薄いミントグラデ → 下ホワイト ===== */
+html, body { background: var(--mint-75); }
 body{
   background:
-    radial-gradient(1200px 320px at 50% -120px, var(--mint-100), transparent 70%),
-    linear-gradient(to bottom, var(--mint-50), #ffffff 40%);
+    radial-gradient(1200px 360px at 50% -160px, var(--mint-100), transparent 70%),
+    linear-gradient(to bottom, var(--mint-75), #ffffff 45%);
   color: var(--fg);
 }
 
-/* ヒーローの帯 */
+/* ===== コンテナの基本余白（画像の広めレイアウトに合わせる） ===== */
+.container{ max-width: 960px; padding-left: 24px; padding-right: 24px; }
+
+/* ===== ヒーロー（上部にうっすら帯・角丸） ===== */
 .hero{
-  background: linear-gradient(to bottom, rgba(143,217,189,.10), rgba(143,217,189,0) 80%);
-  border-radius: 0 0 20px 20px;
-  padding: 16px 0 12px;
+  background: linear-gradient(to bottom, rgba(57,187,136,.10), rgba(57,187,136,0) 85%);
+  border-radius: 0 0 var(--radius-l) var(--radius-l);
+  padding-top: 18px; padding-bottom: 12px;
 }
-.catch{ color: var(--ink-500); }
+.title{ letter-spacing: .01em; }
+.catch{ color: var(--fg-weak); }
 
-/* ボタン（主要・ゴースト） */
-.actions{ gap: 12px; }
-.btn{
-  border-radius: 999px;
-  border: 1.5px solid transparent;
-  box-shadow: var(--elev-1);
-  transition: all .14s ease;
-}
-.btn[href]{ background: var(--btn-solid-bg); color: var(--btn-solid-fg); }
-.btn[href]:hover{ background: var(--btn-solid-bg-hover); transform: translateY(-1px); box-shadow: var(--elev-2); }
-.btn[href]:active{ transform: translateY(0); box-shadow: var(--elev-1); }
-.btn-ghost{ background:#fff; color:var(--btn-ghost-fg); border-color:var(--btn-ghost-border); }
-.btn-ghost:hover{ background: var(--btn-ghost-bg-hover); }
-.btn:focus-visible{ outline:none; box-shadow: var(--focus-ring); }
-
-/* カード（Features） */
+/* ===== カード（Features の白い箱） ===== */
 .features .inner{
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-l);
   box-shadow: var(--elev-1);
-  padding: 18px 20px;
+  padding: 20px 22px;
 }
-.features h2{ color: var(--ink-700); letter-spacing:.12em; }
-.label{ border-left: 3px solid var(--mint-400); color: var(--ink-700); }
+.features h2{
+  color: var(--ink-700);
+  letter-spacing: .10em;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.label{
+  border-left: 3px solid rgba(57,187,136,.35);
+  color: var(--ink-700);
+}
 
-/* 入力UI（setup / seats 共通） */
-input[type="text"], input[type="number"], input[type="file"], textarea, select{
-  appearance:none; width:100%;
-  background:#fff; color:var(--fg);
-  border:1.5px solid rgba(16,24,40,.18);
-  border-radius:10px; padding:10px 12px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), var(--elev-1);
-  transition:border-color .12s ease, box-shadow .12s ease, background .12s ease;
+/* ===== ボタン（主要＝濃いミント、Pill、影は控えめ） ===== */
+.actions{ gap: 12px; }
+.btn{
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--btn-solid-bg);
+  color: var(--btn-solid-fg);
+  box-shadow: var(--elev-1);
+  transition: background .14s ease, transform .12s ease, box-shadow .14s ease;
 }
+.btn:hover{ background: var(--btn-solid-bg-hover); transform: translateY(-1px); box-shadow: var(--elev-2); }
+.btn:active{ transform: translateY(0); box-shadow: var(--elev-1); }
+.btn:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+
+/* セカンダリ/ゴーストが必要なときは .btn-ghost を追加 */
+.btn-ghost{
+  background: #fff;
+  color: var(--btn-ghost-fg);
+  border-color: var(--btn-ghost-border);
+}
+.btn-ghost:hover{ background: var(--btn-ghost-bg-hover); }
+
+/* ===== 入力UI（setup/seats 向け：緑アクセント枠＋内側の艶） ===== */
+input[type="text"], input[type="number"], input[type="file"],
+textarea, select{
+  appearance: none;
+  width: 100%;
+  background: #fff;
+  color: var(--fg);
+  border: 1.5px solid rgba(17,24,39,.16);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.85),
+    0 1px 2px rgba(16,24,40,.04);
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+}
+input:hover, textarea:hover, select:hover{
+  border-color: rgba(17,24,39,.26);
+}
+input:focus, textarea:focus, select:focus{
+  outline: none;
+  border-color: var(--mint-500);
+  box-shadow: var(--focus-ring), inset 0 1px 0 rgba(255,255,255,.85);
+}
+
+/* ファイル選択ボタン（画像の小型pill） */
 input::file-selector-button{
-  background: var(--mint-600); color:#fff; border:none;
-  border-radius:999px; padding:8px 12px; margin-right:10px; cursor:pointer;
+  background: var(--mint-600);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  margin-right: 10px;
+  cursor: pointer;
 }
-input:hover, textarea:hover, select:hover{ border-color: rgba(16,24,40,.28); }
-input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--mint-600); box-shadow: var(--focus-ring); }
 
-/* 小バッジボタン */
+/* ドロップ枠（名簿入力の点線ボックス風） */
+.dropzone{
+  border: 2px dashed rgba(47,167,114,.35);
+  border-radius: 12px;
+  background: rgba(47,167,114,.05);
+  padding: 14px;
+  color: var(--ink-500);
+}
+
+/* 右上の小ボタン（名簿テンプレなど） */
 .badge-btn{
-  display:inline-flex; align-items:center; gap:6px;
-  background:#fff; color:var(--mint-700);
-  border:1.5px solid rgba(56,142,108,.35);
-  border-radius:999px; padding:8px 12px;
-  font-weight:700; font-size:13px; box-shadow: var(--elev-1);
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fff;
+  color: var(--mint-700);
+  border: 1.5px solid var(--btn-ghost-border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700; font-size: 13px;
+  box-shadow: var(--elev-1);
 }
-.badge-btn:hover{ background: rgba(56,142,108,.06); }
+.badge-btn:hover{ background: var(--btn-ghost-bg-hover); }
 
-/* Mock画像フレーム */
-.mock .frame{ background:#fff; border:1px solid var(--card-border); border-radius:14px; box-shadow: var(--elev-2); }
+/* ===== ページ下部のモック画像フレーム ===== */
+.mock .frame{
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: var(--elev-2);
+}
 .mock figcaption{ color: var(--ink-500); }
 
-/* ダークモード */
+/* ===== フッター操作バー（“次へ/戻る”の固定バー） ===== */
+.footer-bar{
+  position: sticky; bottom: 0; z-index: 10;
+  background: linear-gradient(to top, rgba(255,255,255,.96), rgba(255,255,255,0));
+  backdrop-filter: saturate(140%) blur(6px);
+  padding: 10px 16px;
+  border-top: 1px solid rgba(16,24,40,.08);
+}
+
+/* ===== ダークモード（淡い反転＋アクセント生かす） ===== */
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#0b0f14; --card-bg:#0e1319; --card-border: rgba(255,255,255,.10);
+    --bg:#0b0f14; --card-bg:#0f151c; --card-border: rgba(255,255,255,.12);
     --fg:#e5e7eb; --fg-weak:#cbd5e1; --border: rgba(255,255,255,.16);
   }
   body{
     background:
-      radial-gradient(1200px 320px at 50% -120px, rgba(63,201,150,.10), transparent 70%),
-      linear-gradient(to bottom, #0b1116, #0b0f14 40%);
+      radial-gradient(1200px 360px at 50% -160px, rgba(57,187,136,.10), transparent 70%),
+      linear-gradient(to bottom, #0b1116, #0b0f14 45%);
   }
-  .btn-ghost{ background:transparent; }
-  input, textarea, select{ background:#0f151c; color:#e5e7eb; border-color: rgba(255,255,255,.16); }
+  .btn-ghost{ background: transparent; }
+  input, textarea, select{
+    background:#0f151c; color:#e5e7eb; border-color: rgba(255,255,255,.14);
+  }
 }
