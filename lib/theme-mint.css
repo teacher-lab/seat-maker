@@ -55,7 +55,12 @@
 }
 
 /* ===== 背景：単色 ===== */
-html, body { background: var(--bg); color: var(--fg); }
+html, body 
+body{
+  background: var(--mint-75);
+  color: var(--fg);
+}
+
 
 /* ===== コンテナの基本余白 ===== */
 .container{ max-width: 960px; padding-left: 24px; padding-right: 24px; }
