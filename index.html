@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
+<head><style>
+  /* 背景は単色に（グラデ全無効） */
+  html, body { background: #eef7f1 !important; background-image: none !important; }
+
+  /* ヒーローの帯も消す */
+  .hero { background: transparent !important; }
+
+  /* ボタンは濃い緑のピル型に */
+  :root{
+    --btn-green: #177a3a; --btn-green-hover:#126532; --btn-green-active:#0f5529;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    min-width:236px; padding:14px 22px; font-size:16px; font-weight:800; line-height:1;
+    color:#fff !important; background:var(--btn-green) !important;
+    border:none !important; border-radius:999px !important;
+    box-shadow:0 1px 2px rgba(0,0,0,.08);
+  }
+  .btn:hover{ background:var(--btn-green-hover) !important; transform:translateY(-1px); }
+  .btn:active{ background:var(--btn-green-active) !important; transform:none; }
+  .btn:focus-visible{ outline:none; box-shadow:0 0 0 3px rgba(23,122,58,.28); }
+  .btn.btn-next::after{ content:"➔"; font-weight:900; font-size:18px; line-height:1; }
+</style>
+``
   <meta charset="UTF-8" />
   <title>席替えさん｜教室座席表アプリ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -146,3 +169,4 @@
   </section>
 </body>
 </html>
+
