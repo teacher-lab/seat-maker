@@ -1,45 +1,42 @@
 /* =========================================================
-   Theme: Soft Mint App UI v2（参考画像寄せ）
-   ・淡いミント背景グラデ＋白カード＋極薄枠
-   ・角丸は大きめ（12〜16px）、影はごく控えめ
-   ・主要ボタンは濃いミント実線＋白文字、Pill
-   ・入力欄は緑アクセントのアウトライン＋内側に薄い陰影
+   Theme: Soft Mint App UI v2 (No-Gradient)
+   ・背景は単色の淡いミント（グラデーションなし）
+   ・白カード＋極薄枠＋控えめの影
+   ・Pill 形のグリーン実線ボタン
+   ・入力欄は緑アクセントのアウトライン＋内側の艶
    ========================================================= */
 
-/* ===== 基本パレット（画像の雰囲気に近い控えめミント） ===== */
+/* ===== 基本パレット ===== */
 :root{
-  /* 背景系（かなり淡いミント → ホワイト） */
-  --mint-50:  #f3faf5;
+  /* 背景（かなり淡いミント） */
   --mint-75:  #eef7f1;
   --mint-100: #e8f4ed;
-  --mint-200: #dbefe5;
 
   /* アクセント（ボタン/フォーカス等） */
-  --mint-500: #39bb88;  /* メイン */
-  --mint-600: #2fa772;  /* ホバー */
-  --mint-700: #248a5e;  /* アクティブ/強調 */
+  --mint-500: #39bb88;   /* メイン */
+  --mint-600: #2fa772;   /* ホバー */
+  --mint-700: #248a5e;   /* アクティブ/強調 */
 
   /* テキスト/枠 */
-  --ink-900:  #0f172a; /* 本文 */
-  --ink-700:  #344054; /* 見出し/ラベル */
-  --ink-500:  #667085; /* 補助テキスト */
+  --ink-900:  #0f172a;   /* 本文 */
+  --ink-700:  #344054;   /* 見出し/ラベル */
+  --ink-500:  #667085;   /* 補助テキスト */
   --line:     rgba(17,24,39,.12);
 
-  /* 角丸と影（やわらかい） */
+  /* 角丸・影 */
   --radius-s: 8px;
   --radius-m: 12px;
   --radius-l: 16px;
-  --elev-0:   none;
   --elev-1:   0 1px 2px rgba(16,24,40,.05);
   --elev-2:   0 6px 18px rgba(16,24,40,.08);
 
-  /* 従来トークンをこのテーマ色で上書き（あなたの既存CSS互換） */
+  /* 既存トークン互換（色のみ上書き） */
   --bg: var(--mint-75);
   --fg: var(--ink-900);
   --fg-weak: var(--ink-500);
   --border: var(--line);
 
-  /* コンポーネント共通 */
+  /* コンポーネント */
   --card-bg: #fff;
   --card-border: var(--line);
 
@@ -48,7 +45,7 @@
   --btn-solid-bg-hover: var(--mint-600);
   --btn-solid-fg: #fff;
 
-  /* ゴースト/セカンダリ（右上の小ボタンなど） */
+  /* セカンダリ/ゴースト */
   --btn-ghost-fg: var(--mint-700);
   --btn-ghost-border: rgba(47,167,114,.28);
   --btn-ghost-bg-hover: rgba(47,167,114,.10);
@@ -57,21 +54,15 @@
   --focus-ring: 0 0 0 3px rgba(57,187,136,.28);
 }
 
-/* ===== ページ背景：上部ごく薄いミントグラデ → 下ホワイト ===== */
-html, body { background: var(--mint-75); }
-body{
-  background:
-    radial-gradient(1200px 360px at 50% -160px, var(--mint-100), transparent 70%),
-    linear-gradient(to bottom, var(--mint-75), #ffffff 45%);
-  color: var(--fg);
-}
+/* ===== 背景：単色 ===== */
+html, body { background: var(--bg); color: var(--fg); }
 
-/* ===== コンテナの基本余白（画像の広めレイアウトに合わせる） ===== */
+/* ===== コンテナの基本余白 ===== */
 .container{ max-width: 960px; padding-left: 24px; padding-right: 24px; }
 
-/* ===== ヒーロー（上部にうっすら帯・角丸） ===== */
+/* ===== ヒーロー（帯のグラデは外し、余白のみ） ===== */
 .hero{
-  background: linear-gradient(to bottom, rgba(57,187,136,.10), rgba(57,187,136,0) 85%);
+  /* 背景グラデーション削除 → フラット */
   border-radius: 0 0 var(--radius-l) var(--radius-l);
   padding-top: 18px; padding-bottom: 12px;
 }
@@ -97,7 +88,7 @@ body{
   color: var(--ink-700);
 }
 
-/* ===== ボタン（主要＝濃いミント、Pill、影は控えめ） ===== */
+/* ===== ボタン（主要＝濃いミント、Pill） ===== */
 .actions{ gap: 12px; }
 .btn{
   border-radius: 999px;
@@ -111,7 +102,7 @@ body{
 .btn:active{ transform: translateY(0); box-shadow: var(--elev-1); }
 .btn:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
 
-/* セカンダリ/ゴーストが必要なときは .btn-ghost を追加 */
+/* ゴーストが必要な場合用 */
 .btn-ghost{
   background: #fff;
   color: var(--btn-ghost-fg);
@@ -119,7 +110,7 @@ body{
 }
 .btn-ghost:hover{ background: var(--btn-ghost-bg-hover); }
 
-/* ===== 入力UI（setup/seats 向け：緑アクセント枠＋内側の艶） ===== */
+/* ===== 入力UI（setup/seats 用） ===== */
 input[type="text"], input[type="number"], input[type="file"],
 textarea, select{
   appearance: none;
@@ -134,16 +125,14 @@ textarea, select{
     0 1px 2px rgba(16,24,40,.04);
   transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
 }
-input:hover, textarea:hover, select:hover{
-  border-color: rgba(17,24,39,.26);
-}
+input:hover, textarea:hover, select:hover{ border-color: rgba(17,24,39,.26); }
 input:focus, textarea:focus, select:focus{
   outline: none;
   border-color: var(--mint-500);
   box-shadow: var(--focus-ring), inset 0 1px 0 rgba(255,255,255,.85);
 }
 
-/* ファイル選択ボタン（画像の小型pill） */
+/* ファイル選択ボタン（小型 pill） */
 input::file-selector-button{
   background: var(--mint-600);
   color: #fff;
@@ -163,7 +152,7 @@ input::file-selector-button{
   color: var(--ink-500);
 }
 
-/* 右上の小ボタン（名簿テンプレなど） */
+/* 小ボタン（名簿テンプレ等） */
 .badge-btn{
   display: inline-flex; align-items: center; gap: 6px;
   background: #fff;
@@ -176,7 +165,7 @@ input::file-selector-button{
 }
 .badge-btn:hover{ background: var(--btn-ghost-bg-hover); }
 
-/* ===== ページ下部のモック画像フレーム ===== */
+/* ===== モック画像フレーム ===== */
 .mock .frame{
   background: #fff;
   border: 1px solid var(--card-border);
@@ -185,26 +174,13 @@ input::file-selector-button{
 }
 .mock figcaption{ color: var(--ink-500); }
 
-/* ===== フッター操作バー（“次へ/戻る”の固定バー） ===== */
-.footer-bar{
-  position: sticky; bottom: 0; z-index: 10;
-  background: linear-gradient(to top, rgba(255,255,255,.96), rgba(255,255,255,0));
-  backdrop-filter: saturate(140%) blur(6px);
-  padding: 10px 16px;
-  border-top: 1px solid rgba(16,24,40,.08);
-}
-
-/* ===== ダークモード（淡い反転＋アクセント生かす） ===== */
+/* ===== ダークモード ===== */
 @media (prefers-color-scheme: dark){
   :root{
     --bg:#0b0f14; --card-bg:#0f151c; --card-border: rgba(255,255,255,.12);
     --fg:#e5e7eb; --fg-weak:#cbd5e1; --border: rgba(255,255,255,.16);
   }
-  body{
-    background:
-      radial-gradient(1200px 360px at 50% -160px, rgba(57,187,136,.10), transparent 70%),
-      linear-gradient(to bottom, #0b1116, #0b0f14 45%);
-  }
+  html, body { background: var(--bg); }
   .btn-ghost{ background: transparent; }
   input, textarea, select{
     background:#0f151c; color:#e5e7eb; border-color: rgba(255,255,255,.14);
