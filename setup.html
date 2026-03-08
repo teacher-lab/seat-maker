@@ -32,6 +32,7 @@
   --border:#E5E7EB;
 }
 
+/* reset */
 *{box-sizing:border-box}
 body{
   margin:0; background:var(--bg); color:var(--ink);
@@ -51,16 +52,22 @@ a.brand{ display:inline-flex; align-items:center; gap:12px; text-decoration:none
 .logo{ display:inline-block }
 .brand-title{ font-weight:900; font-size:22px; letter-spacing:.5px; color:var(--brand-deep); }
 
-/* ヘッダー右の「次へ」 */
 .topnav{ margin-left:auto; display:inline-flex; gap:8px; align-items:center; }
-.topnav a{
+.btn-cta{
   display:inline-flex; align-items:center; gap:8px;
   padding:10px 16px; border:1px solid var(--brand);
   border-radius:12px; background:var(--brand); color:#fff; text-decoration:none; font-weight:900;
 }
-.topnav a:hover{ filter:brightness(1.03); }
+.btn-cta:hover{ filter:brightness(1.03); }
 
-/* ===== カード / 入力UI ===== */
+/* ヘッダー横の［設定方法］ */
+.btn-howto{
+  background:#fff; border:1px solid var(--brand); color:var(--brand);
+  padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer;
+}
+.btn-howto:hover{ background:#f0fdf4; }
+
+/* ===== カード / 全体レイアウト ===== */
 .wrap{ max-width:960px; margin:12px auto; display:flex; flex-direction:column; gap:12px; }
 .card{
   border:1px solid var(--border); border-radius:16px; padding:16px; background:var(--surface);
@@ -68,39 +75,46 @@ a.brand{ display:inline-flex; align-items:center; gap:12px; text-decoration:none
 }
 .card h2{
   margin:0; font-size:18px; color:var(--brand-deep);
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
+
+/* ===== 基本レイアウトの入力 ===== */
 .row{ display:grid; grid-template-columns:160px 1fr; align-items:center; gap:10px; margin:10px 0 }
 input[type="number"], textarea{
   width:100%; padding:10px; border:1px solid var(--border);
   border-radius:10px; background:#fff; font-family:inherit
 }
-textarea{ min-height:220px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace }
+#rows, #cols{
+  border-color:var(--brand); border-width:2px; background:#f6fdf8;
+  padding-top:6px; padding-bottom:6px; font-size:14px; min-height:34px; line-height:1.2;
+}
+#rows:hover,#cols:hover{ border-color:#1a8f47; }
+#rows:focus,#cols:focus{
+  outline:none; border-color:var(--brand); border-width:3px;
+  box-shadow:0 0 0 4px rgba(21,128,61,0.18);
+  transition:border-color .12s, border-width .12s, box-shadow .12s;
+}
 .help{ color:var(--muted); font-size:12px }
 
-/* CSV/XLSX UI */
-.csvRow{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 }
-.dropzone{
-  border:2px dashed #9aa0a6; border-radius:12px; padding:12px; background:#fafafa; min-width:260px; flex:1;
-  transition:border-color .15s, background-color .15s;
+/* ===== 名簿入力 見出し（左：タイトル＋安全、右：テンプレ） ===== */
+.roster-header{ display:flex; align-items:center; gap:12px; }
+.roster-header__left{ display:flex; align-items:center; gap:10px; min-width:0; }
+.roster-title{ font-weight:700; color:var(--brand-deep); }
+/* 右端固定 */
+.roster-header__right{ margin-left:auto; position:relative; }
+
+/* 名簿テンプレ（右ボタン） */
+.btn-roster {
+  --btn-bg: var(--brand); --btn-bg-hover:#137536; --btn-shadow:rgba(0,0,0,.12);
+  display:inline-flex; align-items:center; gap:10px;
+  padding:10px 16px; border:0; border-radius:14px; background:var(--btn-bg); color:#fff;
+  font-weight:900; line-height:1; cursor:pointer; text-decoration:none;
+  box-shadow:0 4px 10px var(--btn-shadow); transition:background .12s, transform .04s;
 }
-.dropzone.dragover{ border-color:#0b84ff; background:#eef6ff }
-.msgOK{ color:#065f46; background:#ecfdf5; border:1px solid #a7f3d0; padding:6px 10px; border-radius:8px; display:inline-block }
-.msgNG{ color:#b00020; background:#fff3f5; border:1px solid #ffd2da; padding:6px 10px; border-radius:8px; white-space:pre-wrap }
+.btn-roster:hover{ background:var(--btn-bg-hover); }
+.btn-roster:active{ transform:translateY(1px); }
+.btn-roster .ico{ width:18px; height:18px; }
 
-/* CTA（次へ） */
-.btn-cta{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:14px 22px; border-radius:12px; border:1px solid var(--brand);
-  background:var(--brand); color:#fff; font-weight:900; text-decoration:none; font-size:16px;
-}
-.btn-cta:hover{ filter:brightness(1.03); }
-
-/* インライン案内（常時表示） */
-.inline-onboard{ border:1px dashed #a7f3d0; background:#f0fdf4; }
-.inline-onboard h3{ margin:.2rem 0 .6rem; font-size:16px; color:#14532d; }
-
-/* 名簿テンプレ：プルダウン（ボタン＋メニュー） */
+/* ドロップダウンメニュー */
 .dropdown{ position:relative; display:inline-block; }
 .dd-menu{
   position:absolute; right:0; top:calc(100% + 6px); min-width:220px;
@@ -109,80 +123,46 @@ textarea{ min-height:220px; font-family:ui-monospace,SFMono-Regular,Menlo,Consol
 }
 .dropdown.open .dd-menu{ display:block; }
 .dd-item{
-  display:block; padding:10px 12px; border-radius:10px;
-  color:var(--ink); text-decoration:none; font-weight:600;
+  display:block; padding:10px 12px; border-radius:10px; color:var(--ink); text-decoration:none; font-weight:600;
 }
 .dd-item:hover{ background:#f1f6f3; }
+.dd-item small{ font-size:10px; color:var(--muted); margin-left:4px; white-space:nowrap; }
 
-/* ▼ 括弧の説明を極小に＆1行表示 */
-.dd-item small{
-  font-size:10px; color:var(--muted);
-  margin-left:4px; white-space:nowrap;
+/* 安全ミニ表記（タイトル直後） */
+.safe-mini{ display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); white-space:nowrap; }
+.safe-mini__icon{ width:16px; height:16px; }
+.safe-mini__link{ color:#0f766e; text-decoration:underline; font-weight:600; }
+
+/* ===== ドロップ領域（並びを安定／補足非表示） ===== */
+.csvRow{ margin:10px 0 12px; }
+.dropzone{
+  border:2px dashed #9aa0a6; border-radius:12px; padding:14px;
+  background:#fafafa; color:#334155; min-height:64px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; /* 折返しても並び崩れ防止 */
+  transition:border-color .15s, background-color .15s;
+}
+.dropzone strong{ font-weight:800; }
+.dropzone input[type=file]{ margin-left:8px; }
+.dropzone.dragover{ border-color:#0b84ff; background:#eef6ff; }
+/* 補足文は非表示（ご要望） */
+.drop-hint{ display:none !important; }
+
+/* 名簿テキストエリア（低め） */
+#rosterText{ min-height:120px; line-height:1.5; }
+
+/* ===== フッター ===== */
+footer{
+  border-top:1px solid var(--border);
+  background:#fff; padding:12px 16px;
+  display:flex; align-items:center; gap:10px;
+}
+footer .spacer{ flex:1; }
+.btn-reset{
+  background:#fff; color:#0f172a; border:1px solid var(--border);
+  border-radius:10px; padding:8px 12px; cursor:pointer;
 }
 
-/* 鍵＋控えめ安全表記（行内） */
-.safety-inline{
-  display:flex; align-items:center; gap:8px;
-  margin:8px 0 0; font-size:13px; line-height:1.7; color:var(--muted);
-}
-.lock-btn{ border:0; background:transparent; padding:0; cursor:pointer; display:inline-flex; align-items:center; }
-.lock-icon{ width:16px; height:16px; color:#15803d; }
-.more{ color:#0f766e; text-decoration:underline; font-weight:600; cursor:pointer; }
-
-/* ===== 行×列の入力枠：太い緑（通常2px／フォーカス3px＋リング） ===== */
-#rows, #cols{
-  border-color: var(--brand);
-  border-width: 2px;
-  background: #f6fdf8;
-}
-#rows:hover, #cols:hover{ border-color: #1a8f47; }
-#rows:focus, #cols:focus{
-  outline:none;
-  border-color: var(--brand);
-  border-width: 3px;
-  box-shadow: 0 0 0 4px rgba(21,128,61,0.18);
-  transition: border-color .12s ease, border-width .12s ease, box-shadow .12s ease;
-}
-@media (forced-colors: active) {
-  #rows, #cols{ border: 3px solid CanvasText; }
-  #rows:focus, #cols:focus{ outline: 2px solid Highlight; box-shadow:none; }
-}
-
-/* ===== 名簿テンプレ：緑の丸角ボタン（ダウンロードアイコン） ===== */
-.btn-roster {
-  --btn-bg: var(--brand);
-  --btn-bg-hover: #137536;
-  --btn-shadow: rgba(0,0,0,.12);
-
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border: 0;
-  border-radius: 14px;
-  background: var(--btn-bg);
-  color: #fff;
-  font-weight: 900;
-  text-decoration: none;
-  line-height: 1;
-  box-shadow: 0 4px 10px var(--btn-shadow);
-  cursor: pointer;
-  transition: background .12s ease, transform .04s ease;
-}
-.btn-roster:hover { background: var(--btn-bg-hover); }
-.btn-roster:active { transform: translateY(1px); }
-.btn-roster:focus-visible {
-  outline: 3px solid rgba(21,128,61,.30);
-  outline-offset: 2px;
-}
-.btn-roster .ico { width:18px; height:18px; display:inline-block; }
-.btn-roster .label { font-size:16px; letter-spacing:.5px; white-space:nowrap; }
-.btn-roster.sm { padding:8px 14px; border-radius:12px; }
-.btn-roster.lg { padding:12px 18px; border-radius:16px; }
-.btn-roster.sm .label { font-size:14px; }
-.btn-roster.lg .label { font-size:18px; }
-
-/* モーダルの表示制御を aria-hidden に統一（!important で他の記述を無効化） */
+/* モーダル（共通） */
 .modal-backdrop{
   position:fixed; inset:0; background:rgba(0,0,0,.35);
   display:flex; align-items:center; justify-content:center;
@@ -190,8 +170,6 @@ textarea{ min-height:220px; font-family:ui-monospace,SFMono-Regular,Menlo,Consol
 }
 .modal-backdrop[aria-hidden="true"]  { display:none !important; }
 .modal-backdrop[aria-hidden="false"] { display:flex !important; }
-
-/* モーダルボックス */
 .modal{
   width:min(92vw, 560px); background:#fff; border-radius:16px; border:1px solid var(--border);
   box-shadow:0 18px 40px rgba(0,0,0,.18);
@@ -200,28 +178,22 @@ textarea{ min-height:220px; font-family:ui-monospace,SFMono-Regular,Menlo,Consol
 .modal .body{ padding:16px; color:#0f172a; }
 .modal .close{ margin-left:auto; background:#fff; border:1px solid var(--border); border-radius:10px; padding:6px 10px; cursor:pointer; }
 
-/* フッター */
-footer{ bottom:0; border-top:1px solid var(--border); padding:12px 16px; display:flex; gap:10px; background:#fff }
-footer .spacer{ flex:1 }
-
-/* ドロップダウンが切れないように保険 */
+/* 断ち切れ回避 */
 .card, .card h2 { overflow: visible; }
 
-/* 見出しの並び微調整 */
-#roster h2 { gap:12px; }
-
-@media (max-width: 520px){
+@media (max-width:520px){
   .brand-title{ font-size:20px }
   .row{ grid-template-columns:120px 1fr; }
+  .safe-mini{ white-space:normal; }
 }
 </style>
 </head>
 <body>
 
-<!-- ===== ヘッダー（右に「次へ」CTA） ===== -->
+<!-- ===== ヘッダー ===== -->
 <header role="banner" aria-label="ページヘッダー">
+  <!-- ブランド -->
   <a class="brand" href="setup.html" aria-label="席替えくん ホーム">
-    <!-- 手書き風 黒板ロゴ（SVG） -->
     <svg class="logo" width="40" height="30" viewBox="0 0 180 140" aria-hidden="true">
       <rect x="6" y="10" width="168" height="100" rx="8" ry="8" fill="#215a3a" stroke="#1b4a30" stroke-width="6"/>
       <rect x="6" y="10" width="168" height="100" rx="8" ry="8" fill="none" stroke="#8b5e34" stroke-width="8" opacity=".9"/>
@@ -232,31 +204,22 @@ footer .spacer{ flex:1 }
     <span class="brand-title">席替えくん</span>
   </a>
 
+  <!-- 設定方法（はじめに） -->
+  <button type="button"
+          class="btn-howto"
+          data-open="howto"
+          aria-haspopup="dialog"
+          aria-controls="howtoBackdrop">
+    設定方法
+  </button>
+
   <div class="spacer" aria-hidden="true"></div>
 
-  <nav class="topnav" aria-label="メインナビゲーション">
-    <a id="btnGoSeatsHeader" href="seats.html" class="btn-cta" role="button" aria-label="次へ（座席設定へ進む）">
-      次へ（座席設定へ進む）
-      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="#fff" d="M13 5l7 7-7 7v-4H4v-6h9V5z"/>
-      </svg>
-    </a>
-  </nav>
+
 </header>
 
 <main>
   <div class="wrap">
-
-    <!-- インライン案内（レイアウトの上・常時表示） -->
-    <section class="card inline-onboard" aria-label="準備手順">
-      <h3>はじめに（1分で準備できます）</h3>
-      <ol style="margin:.2rem 0; padding-left:1.2rem; line-height:1.8">
-        <li>座席の基本レイアウト（行と列）を設定</li>
-        <li>必要なら名簿テンプレをダウンロード</li>
-        <li>名簿（Excel/CSV）を「名簿入力」にドラッグ＆ドロップ</li>
-        <li><strong>「次へ（座席設定へ進む）」</strong> を押すと座席設定に進みます</li>
-      </ol>
-    </section>
 
     <!-- 基本レイアウト -->
     <section class="card" aria-label="座席レイアウト設定">
@@ -264,7 +227,6 @@ footer .spacer{ flex:1 }
       <div class="row">
         <label for="rows">行 × 列</label>
         <div style="display:flex;gap:8px">
-          <!-- ★ 初期値 5×6（HTML の value 指定） -->
           <input id="rows" type="number" min="1" max="20" step="1" value="5" aria-label="行数">
           <span>×</span>
           <input id="cols" type="number" min="1" max="20" step="1" value="6" aria-label="列数">
@@ -274,52 +236,52 @@ footer .spacer{ flex:1 }
 
     <!-- 名簿入力 -->
     <section id="roster" class="card" aria-label="名簿入力">
-      <h2>
-        <span>名簿入力</span>
-
-        <!-- ▼ dropdown：緑ボタン（トグル）＋メニュー -->
-        <div class="dropdown" data-dd>
-          <button type="button" class="btn-roster" id="btnRosterOpen"
-                  aria-haspopup="menu" aria-expanded="false" aria-controls="menuRosterTpl">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 4v9m0 0l-4-4m4 4l4-4" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5 18h14" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- 見出し：左=タイトル＋安全 / 右=テンプレ（右端） -->
+      <h2 class="roster-header">
+        <div class="roster-header__left">
+          <span class="roster-title">名簿入力</span>
+          <span class="safe-mini">
+            <svg class="safe-mini__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#15803d" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/>
             </svg>
-            <span class="label">名簿テンプレ</span>
-          </button>
-
-          <ul id="menuRosterTpl" class="dd-menu" role="menu" aria-labelledby="btnRosterOpen">
-            <li role="none">
-              <a class="dd-item" role="menuitem" href="assets/roster/名簿テンプレート.xlsx" download>
-                クラス用 <small>（出席番号 / 名前 / ふりがな）</small>
-              </a>
-            </li>
-            <li role="none">
-              <a class="dd-item" role="menuitem" href="assets/roster/名簿テンプレート_授業用.xlsx" download>
-                授業用 <small>（クラス / 名前）</small>
-              </a>
-            </li>
-          </ul>
+            <span class="safe-mini__text">名簿データは端末内のみで処理され、サーバーへ送信されません。</span>
+            <a class="safe-mini__link" href="#" data-open="safety" aria-controls="safetyBackdrop">詳しく</a>
+          </span>
+        </div>
+        <div class="roster-header__right">
+          <div class="dropdown" data-dd>
+            <button type="button" class="btn-roster" id="btnRosterOpen"
+                    aria-haspopup="menu" aria-expanded="false" aria-controls="menuRosterTpl">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4v9m0 0l-4-4m4 4l4-4" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 18h14" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+              <span class="label">名簿テンプレ</span>
+            </button>
+            <ul id="menuRosterTpl" class="dd-menu" role="menu" aria-labelledby="btnRosterOpen">
+              <li role="none">
+                <a class="dd-item" role="menuitem" href="assets/roster/名簿テンプレート.xlsx" download>
+                  クラス用 <small>（出席番号 / 名前 / ふりがな）</small>
+                </a>
+              </li>
+              <li role="none">
+                <a class="dd-item" role="menuitem" href="assets/roster/名簿テンプレート_授業用.xlsx" download>
+                  授業用 <small>（クラス / 名前）</small>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </h2>
 
-      <!-- 控えめ安全表記（鍵＋詳しく） -->
-      <p class="help safety-inline">
-        <button type="button" class="lock-btn" data-open="safety" aria-label="安全性の詳細を開く">
-          <svg class="lock-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/>
-          </svg>
-        </button>
-        <span>名簿データは端末内のみで処理され、サーバーへ送信されません。</span>
-        <a class="more" href="#" data-open="safety">詳しく</a>
-      </p>
-
-      <!-- CSV/XLSX 取り込みUI -->
+      <!-- ドロップ & ファイル選択（並び修正／補足非表示） -->
       <div class="csvRow">
         <div class="dropzone" id="dropzone" aria-label="名簿ファイルのドロップ領域">
           <strong>ここに .xlsx / .csv をドロップ</strong> または
-          <input type="file" id="csvFile" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" aria-label="名簿ファイルを選択">
-          <div class="help">ヘッダー行は自動判定。Excel は「出席番号 / 氏名 / ふりがな」などの表記ゆれを吸収します。</div>
+          <input type="file" id="csvFile"
+                 accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                 aria-label="名簿ファイルを選択">
+          <span class="drop-hint">（ヘッダー行は自動判定／Excel は「出席番号・氏名・ふりがな」等の表記ゆれを吸収）</span>
         </div>
       </div>
 
@@ -327,17 +289,17 @@ footer .spacer{ flex:1 }
       <div id="csvErr" class="msgNG" style="display:none;"></div>
 
       <textarea id="rosterText" placeholder="1, 山田太郎, やまだ たろう&#10;101, 田中一郎, " aria-label="名簿テキストエリア"></textarea>
-      <div class="help" style="margin-top:6px;">※ 名簿はセッション（タブ）内のみ保持します。ページの再読み込みで初期化されます。</div>
+      <div class="help" style="margin-top:6px;"></div>
     </section>
 
   </div>
 </main>
 
-<footer>
-  <button id="btnReset" type="button" class="topnav" style="background:#fff;border:1px solid var(--border);color:var(--ink);">初期値に戻す</button>
+<!-- ===== フッター ===== -->
+<footer role="contentinfo" aria-label="ページフッター">
+  <button id="btnReset" type="button" class="btn-reset">初期値に戻す</button>
   <div class="spacer"></div>
-  <!-- フッターの「次へ（座席設定へ進む）」 -->
-  <a id="btnGoSeats" href="seats.html" class="btn-cta" role="button" aria-label="次へ（座席設定へ進む）">
+  <a id="btnGoSeatsFooter" href="seats.html" class="btn-cta" role="button" aria-label="次へ（座席設定へ進む）">
     次へ（座席設定へ進む）
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
       <path fill="#fff" d="M13 5l7 7-7 7v-4H4v-6h9V5z"/>
@@ -374,12 +336,34 @@ footer .spacer{ flex:1 }
   </div>
 </div>
 
+<!-- 設定方法（はじめに）ポップアップ：初期は非表示 -->
+<div id="howtoBackdrop" class="modal-backdrop"
+     role="dialog" aria-modal="true" aria-labelledby="howtoTitle"
+     aria-hidden="true">
+  <div class="modal" role="document" style="max-width:560px;">
+    <header>
+      <svg class="logo" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#15803d" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/>
+      </svg>
+      <strong id="howtoTitle" style="color:var(--brand-deep);">はじめに（1分で準備できます）</strong>
+      <button type="button" class="close" data-close="howto" aria-label="閉じる">OK</button>
+    </header>
+    <div class="body">
+      <ol style="margin:.2rem 0; padding-left:1.2rem; line-height:1.8">
+        <li>座席の基本レイアウト（行と列）を設定</li>
+        <li>必要なら名簿テンプレをダウンロード</li>
+        <li>名簿（Excel/CSV）を「名簿入力」にドラッグ＆ドロップ</li>
+        <li><strong>「次へ（座席設定へ進む）」</strong> を押すと座席設定に進みます</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============ 設定 I/O ============ */
 const STORAGE = { SETUP:'class_setup_v7' };
 const SESSION = { ROSTER:'class_roster_session_v1' };
 
-// JS側の defaults は据え置き（保存値がある場合は保存値優先）
 const defaults = {
   rows:5, cols:6,
   seatSize:96, seatRatio:1.80, deskGap:28, gapPx:16,
@@ -389,10 +373,6 @@ const LOCKED = { seatSize:96, seatRatio:1.80, gapPx:16 };
 const LOCKED_ASSIGN = { avoidSame:true, retentionDays:30 };
 const LOCKED_UI = { deskGap:28, showBadge:true };
 
-function loadSetup(){
-  try{ return Object.assign({}, defaults, JSON.parse(localStorage.getItem(STORAGE.SETUP)||'{}')); }
-  catch{ return {...defaults}; }
-}
 function saveSetup(data){
   const { rosterText, ...rest } = data || {};
   const payload = { ...rest, ...LOCKED, ...LOCKED_ASSIGN, ...LOCKED_UI };
@@ -401,31 +381,21 @@ function saveSetup(data){
 }
 function loadRosterSession(){ return sessionStorage.getItem(SESSION.ROSTER) || ''; }
 
-/* ============ 画面バインド ============ */
-const rows = document.getElementById('rows');
-const cols = document.getElementById('cols');
-const rosterText = document.getElementById('rosterText');
-const csvFile = document.getElementById('csvFile');
-const dropzone = document.getElementById('dropzone');
-const csvOk = document.getElementById('csvOk');
-const csvErr = document.getElementById('csvErr');
+/* ===== 画面要素 ===== */
+const rows        = document.getElementById('rows');
+const cols        = document.getElementById('cols');
+const rosterText  = document.getElementById('rosterText');
+const csvFile     = document.getElementById('csvFile');
+const dropzone    = document.getElementById('dropzone');
+const csvOk       = document.getElementById('csvOk');
+const csvErr      = document.getElementById('csvErr');
 
-function bindValues(s){
-  // 保存値があればそれを表示、なければ HTML の value（5×6）がそのまま使われます
-  rows.value = (s.rows ?? rows.value);
-  cols.value = (s.cols ?? cols.value);
-  rosterText.value = loadRosterSession() || s.rosterText || '';
-}
-function readValues(){
-  return {
-    rows: parseInt(rows.value || defaults.rows,10),
-    cols: parseInt(cols.value || defaults.cols,10),
-    ...LOCKED, ...LOCKED_ASSIGN, ...LOCKED_UI,
-    rosterText: rosterText.value || ''
-  };
-}
+/* ===== 初期表示 ===== */
+(function init(){
+  rosterText.value = loadRosterSession();
+})();
 
-/* ============ CSV / XLSX パース ============ */
+/* ===== CSV / XLSX パース ===== */
 function parseStudentsCsv(text){
   const lines = text.replace(/\uFEFF/g,'').trim().split(/\r?\n/);
   if(!lines.length) throw new Error('CSVが空です。');
@@ -447,9 +417,11 @@ function parseStudentsCsv(text){
   if(errors.length) throw new Error(errors.join('\n'));
   return students;
 }
+
 function normalizeHeader(s){ return String(s||'').replace(/\s/g,'').toLowerCase(); }
+
 function extractFromXlsx(arrayBuffer){
-  if(typeof XLSX==='undefined'){ throw new Error('Excelパーサ（XLSX）が読み込めていません。ライブラリ配置を確認してください。'); }
+  if(typeof XLSX==='undefined'){ throw new Error('Excelパーサ（XLSX）が読み込めていません。'); }
   const wb = XLSX.read(arrayBuffer, { type:'array' });
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rowsA = XLSX.utils.sheet_to_json(ws, { header:1, raw:false });
@@ -467,13 +439,15 @@ function extractFromXlsx(arrayBuffer){
   const students=[]; const errors=[];
   for(let i=1;i<rowsA.length;i++){
     const r = rowsA[i] || [];
-    const noStr = (r[idxNo]??'').toString().trim();
+    const noStr   = (r[idxNo]??'').toString().trim();
     const nameRaw = (r[idxName]??'').toString().trim();
-    const kanaCell = (idxKana>=0 ? (r[idxKana]??'').toString().trim() : '');
-    if(!noStr && !nameRaw && !kanaCell){ continue; }
+    const kanaCell= (idxKana>=0 ? (r[idxKana]??'').toString().trim() : '');
+    if(!noStr && !nameRaw && !kanaCell) continue;
+
     const no = parseInt(noStr,10);
     if(!Number.isInteger(no) || no<=0){ errors.push(`${i+1}行目: 番号が不正です -> ${noStr}`); continue; }
     if(!nameRaw){ errors.push(`${i+1}行目: 氏名が空です`); continue; }
+
     let name = nameRaw.replace(/[ァ-ヶー]+$/u,'').trim() || nameRaw;
     const kana = kanaCell;
     students.push({ no, name, kana });
@@ -482,7 +456,7 @@ function extractFromXlsx(arrayBuffer){
   return students;
 }
 
-/* ============ CSV/XLSX UI（ドロップ&選択） ============ */
+/* ===== ドロップ&選択 ===== */
 function showCsvOk(msg){ csvOk.textContent=msg; csvOk.style.display='inline-block'; csvErr.style.display='none'; }
 function showCsvErr(msg){ csvErr.textContent=msg; csvErr.style.display='block'; csvOk.style.display='none'; }
 
@@ -525,69 +499,61 @@ csvFile.addEventListener('change', e=>{
   });
 });
 
-/* ============ 安全性モーダル（中央ポップアップで開閉） ============ */
-(function(){
-  const backdrop = document.getElementById('safetyBackdrop');
-  if(!backdrop) return;
-
-  const openers = document.querySelectorAll('[data-open="safety"]');
-  const closers = backdrop.querySelectorAll('[data-close="safety"]');
-
-  backdrop.setAttribute('aria-hidden','true'); // 初期は必ず非表示
-
-  const open  = (e)=>{ e?.preventDefault?.(); backdrop.setAttribute('aria-hidden','false'); };
-  const close = (e)=>{ e?.preventDefault?.(); backdrop.setAttribute('aria-hidden','true');  };
-
+/* ===== モーダル開閉（共通） ===== */
+function wireModal(backdropId, dataKey){
+  const bd = document.getElementById(backdropId);
+  if(!bd) return;
+  const openers = document.querySelectorAll(`[data-open="${dataKey}"]`);
+  const closers = bd.querySelectorAll(`[data-close="${dataKey}"]`);
+  const open  = (e)=>{ e?.preventDefault?.(); bd.setAttribute('aria-hidden','false'); };
+  const close = (e)=>{ e?.preventDefault?.(); bd.setAttribute('aria-hidden','true');  };
+  bd.setAttribute('aria-hidden','true');
   openers.forEach(el => el.addEventListener('click', open));
   closers.forEach(el => el.addEventListener('click', close));
-
-  backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop) close(); });
+  bd.addEventListener('click', (e)=>{ if(e.target === bd) close(); });
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
-})();
+}
+wireModal('safetyBackdrop','safety');
+wireModal('howtoBackdrop','howto');
 
-/* ============ 「次へ（座席設定へ進む）」= 保存 → seats.html へ遷移 ============ */
+/* ===== 次へ：保存 → seats.html ===== */
+function readValues(){
+  return {
+    rows: parseInt(rows.value || defaults.rows,10),
+    cols: parseInt(cols.value || defaults.cols,10),
+    ...LOCKED, ...LOCKED_ASSIGN, ...LOCKED_UI,
+    rosterText: rosterText.value || ''
+  };
+}
 function saveAndGoSeats(e){
-  // a要素の即時遷移を止めて先に保存
   e.preventDefault();
   try{
-    const v = readValues();
-    saveSetup(v);
+    saveSetup(readValues());
     window.location.href = 'seats.html';
   }catch(err){
     console.error(err);
     alert('保存時にエラーが発生しました。もう一度お試しください。');
   }
 }
-document.getElementById('btnGoSeats')?.addEventListener('click', saveAndGoSeats);
 document.getElementById('btnGoSeatsHeader')?.addEventListener('click', saveAndGoSeats);
+document.getElementById('btnGoSeatsFooter')?.addEventListener('click', saveAndGoSeats);
 
-/* ============ 名簿テンプレ：dropdown 内の緑ボタンで開閉（安定版） ============ */
+/* ===== 名簿テンプレ：開閉（右端ボタン） ===== */
 (function(){
   const dd = document.querySelector('#roster .dropdown[data-dd]');
   if(!dd) return;
-
-  const toggleBtn = dd.querySelector('#btnRosterOpen');  // トグルは dropdown の“中”
+  const toggleBtn = dd.querySelector('#btnRosterOpen');
   const menu      = dd.querySelector('.dd-menu');
   const items     = dd.querySelectorAll('a.dd-item');
 
   const open  = ()=>{ dd.classList.add('open');  toggleBtn?.setAttribute('aria-expanded','true'); };
   const close = ()=>{ dd.classList.remove('open');toggleBtn?.setAttribute('aria-expanded','false'); };
 
-  // トグル
-  toggleBtn?.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation();
-    dd.classList.contains('open') ? close() : open();
-  });
-
-  // dropdown 内のクリックは外側扱いにしない
+  toggleBtn?.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); dd.classList.contains('open') ? close() : open(); });
   dd.addEventListener('click', (e)=>{ e.stopPropagation(); });
-
-  // 外側クリックで閉じる（dropdown の外だけ）
   document.addEventListener('click', (e)=>{ if(!dd.contains(e.target)) close(); });
-
-  // Escで閉じる
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 
-  // キーボード操作（上下キーで項目移動）
   menu?.addEventListener('keydown', (e)=>{
     const arr = Array.from(items);
     const idx = arr.indexOf(document.activeElement);
@@ -596,12 +562,15 @@ document.getElementById('btnGoSeatsHeader')?.addEventListener('click', saveAndGo
   });
 })();
 
-/* ============ 便利：初期値に戻す（名簿もクリア） ============ */
+/* ===== 初期値に戻す ===== */
 document.getElementById('btnReset')?.addEventListener('click', ()=>{
   localStorage.removeItem(STORAGE.SETUP);
   sessionStorage.removeItem(SESSION.ROSTER);
-  rows.value = 5; cols.value = 6; rosterText.value = '';
-  showCsvOk('初期値に戻しました。'); setTimeout(()=>{ csvOk.style.display='none'; }, 2000);
+  rows.value = 5;
+  cols.value = 6;
+  rosterText.value = '';
+  csvOk.textContent = '初期値に戻しました。'; csvOk.style.display='inline-block'; csvErr.style.display='none';
+  setTimeout(()=>{ csvOk.style.display='none'; }, 1800);
 });
 </script>
 </body>
