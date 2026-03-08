@@ -1,183 +1,261 @@
-<style>
-/* ===== Reset ===== */
-*,*::before,*::after{ box-sizing:border-box; }
-html,body{ height:100%; }
-body,h1,h2,p{ margin:0; }
-a{ color:inherit; text-decoration:none; }
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>席替えさん｜教室座席表アプリ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-/* ===== Theme ===== */
-:root{
-  --bg: #eef7f1; /* 単色ミント背景 */
-  --fg: #0f172a;
-  --fg-weak:#667085;
+  <style>
+    /* ===== Reset（最小限） ===== */
+    *,*::before,*::after{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body,h1,h2,p{ margin:0; }
+    a{ color:inherit; text-decoration:none; }
 
-  --line: rgba(17,24,39,.12);
-  --radius-m:12px;
-  --radius-l:16px;
-  --elev-1:0 1px 2px rgba(0,0,0,.05);
-  --elev-2:0 6px 18px rgba(0,0,0,.08);
+    /* ===== Theme Tokens（単色背景／ミント系のUI） ===== */
+    :root{
+      /* 背景は単色（グラデなし） —— もっと白寄りにしたい場合は #f6fbf8 などに変更 */
+      --bg: #eef7f1;
 
-  --max:960px;
+      /* 文字色 */
+      --fg: #0f172a;
+      --fg-weak: #667085;
 
-  /* タイトルスケール */
-  --title: clamp(54px, 9.2vw, 108px);
-  --catch: clamp(13px, 1.8vw, 16px);
-  --gap-title-actions: clamp(44px, 6.8vw, 88px);
+      /* 薄い枠線・影・角丸 */
+      --line: rgba(17,24,39,.12);
+      --card-border: var(--line);
+      --radius-s: 8px;
+      --radius-m: 12px;
+      --radius-l: 16px;
+      --elev-1: 0 1px 2px rgba(0,0,0,.05);
+      --elev-2: 0 6px 18px rgba(0,0,0,.08);
 
-  /* ボタン（例のデザイン） */
-  --btn-green:#177a3a;
-  --btn-green-hover:#126532;
-  --btn-green-active:#0f5529;
-  --btn-ring:rgba(23,122,58,.28); 
-  --btn-minw:236px;
-  --btn-pad-y:14px;
-  --btn-pad-x:22px;
-  --btn-fs:16px;
+      /* コンテナ幅（変更するならここ） */
+      --max: 960px;
 
-  /* features */
-  --feat-h:12px;
-  --feat-label:12px;
-  --feat-p:12px;
-  --feat-line:1.55;
-}
+      /* タイポ（ページ固有スケール） */
+      --title: clamp(54px, 9.2vw, 108px);
+      --catch: clamp(13px, 1.8vw, 16px);
+      --gap-title-actions: clamp(44px, 6.8vw, 88px); /* タイトル↔ボタンの距離 */
 
-/* ===== Base ===== */
-html,body{
-  background: var(--bg);   /* ← グラデなし、単色 */
-  color: var(--fg);
-}
-body{
-  font-family:"Noto Sans JP",system-ui,-apple-system,"Segoe UI",Roboto,
-    "Helvetica Neue","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
-  -webkit-font-smoothing:antialiased;
-}
+      /* ボタンのサイズ感（ページ固有） */
+      --btn-minw: 236px;
+      --btn-pad-y: 14px;  /* さらに存在感を出すなら 16px */
+      --btn-pad-x: 22px;
+      --btn-fs: 16px;     /* さらに強くするなら 17px */
 
-/* ===== Layout ===== */
-.container{ max-width:var(--max); margin:0 auto; padding:0 24px; }
-.viewport{
-  min-height:100svh;
-  display:grid;
-  grid-template-rows:0.60fr 0.40fr;
-}
+      /* ボタン色（参考画像の濃いグリーン） */
+      --btn-green:       #177a3a;
+      --btn-green-hover: #126532;
+      --btn-green-active:#0f5529;
+      --btn-ring:        rgba(23,122,58,.28);
 
-/* ===== Hero ===== */
-.hero{
-  display:flex; flex-direction:column; align-items:center;
-  justify-content:center; text-align:center;
-  padding:18px 0 12px;
-}
-.catch{
-  font-size:var(--catch);
-  letter-spacing:.16em;
-  color:var(--fg-weak);
-  margin-bottom:8px;
-}
-.title{
-  font-size:var(--title);
-  font-weight:800;
-  letter-spacing:.02em;
-  line-height:1.04;
-}
+      /* Features セクションの文字 */
+      --feat-h: 12px;
+      --feat-label: 12px;
+      --feat-p: 12px;
+      --feat-line: 1.55;
+    }
 
-/* ===== Buttons（完全復活版） ===== */
-.actions{
-  display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
-  margin-top: var(--gap-title-actions);
-}
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:10px;
-  min-width:var(--btn-minw);
-  padding:var(--btn-pad-y) var(--btn-pad-x);
-  font-size:var(--btn-fs); font-weight:800;
-  color:#fff;
-  background:var(--btn-green);
-  border:none;
-  border-radius:999px; /* ピル型 */
-  box-shadow:var(--elev-1);
-  transition:background .14s ease, transform .08s ease, box-shadow .14s ease;
-}
-.btn:hover{
-  background:var(--btn-green-hover);
-  transform:translateY(-1px);
-  box-shadow:var(--elev-2);
-}
-.btn:active{
-  background:var(--btn-green-active);
-  transform:none;
-  box-shadow:var(--elev-1);
-}
-.btn:focus-visible{
-  outline:none;
-  box-shadow:0 0 0 3px var(--btn-ring);
-}
-.btn.btn-next::after{
-  content:"➔"; font-weight:900; font-size:18px;
-}
+    /* ===== Base ===== */
+    html, body{ background: var(--bg); color: var(--fg); }
+    body{
+      font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto,
+                   "Helvetica Neue","Hiragino Sans","Yu Gothic UI","Yu Gothic", Meiryo, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    .container{ max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+    .viewport{
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: 0.60fr 0.40fr; /* PC時は機能紹介が近づきすぎない配分 */
+    }
 
-/* ===== Features ===== */
-.features{ display:flex; align-items:flex-start; padding-top:12px; }
-.features .inner{
-  width:100%;
-  display:grid;
-  grid-template-columns:1fr 2fr;
-  gap:12px 28px;
-  padding:20px 22px;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:var(--radius-l);
-  box-shadow:var(--elev-1);
-}
-.features h2{
-  grid-column:1/-1;
-  font-size:var(--feat-h);
-  letter-spacing:.12em;
-  text-align:center;
-  margin-bottom:2px;
-  color:var(--fg-weak);
-}
-.label{
-  font-size:var(--feat-label);
-  font-weight:700;
-  border-left:3px solid rgba(23,122,58,.35);
-  padding-left:8px;
-  color:#344054;
-}
-.desc{
-  display:grid; gap:6px;
-  font-size:var(--feat-p);
-  line-height:var(--feat-line);
-}
+    /* ===== Hero（グラデなし・フラット） ===== */
+    .hero{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center;
+      padding: 28px 0 18px; /* 使いたくなる余白感（上を少し広めに） */
+    }
+    .catch{
+      font-size: var(--catch);
+      letter-spacing: .16em;
+      color: var(--fg-weak);
+      font-weight: 600;
+      opacity: .9;
+      margin-bottom: 8px;
+    }
+    .title{
+      font-size: var(--title);
+      font-weight: 800;
+      letter-spacing: .005em; /* 大見出しの読みやすさ向上 */
+      line-height: 1.02;
+      text-shadow: 0 1px 0 rgba(255,255,255,.6); /* 薄背景での視認性UP（控えめ） */
+      margin-bottom: 0;
+    }
 
-/* ===== Mock Image ===== */
-.mock{
-  margin:48px auto 40px;
-  padding:0 24px;
-  max-width:var(--max);
-}
-.mock .frame{
-  width:100%;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:14px;
-  box-shadow:var(--elev-2);
-}
-.mock img{
-  display:block;
-  max-width:100%;
-  border-radius:12px;
-}
-.mock figcaption{
-  text-align:center;
-  font-size:12px;
-  color:var(--fg-weak);
-  margin-top:6px;
-}
+    /* ===== Buttons：参考画像の濃いグリーンのピル型 ===== */
+    .actions{
+      display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
+      margin-top: var(--gap-title-actions);
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      min-width: var(--btn-minw);
+      padding: var(--btn-pad-y) var(--btn-pad-x);
+      font-size: var(--btn-fs); font-weight: 800; line-height:1;
+      color:#fff;
+      background: var(--btn-green);
+      border: none;
+      border-radius: 999px;                 /* ピル */
+      box-shadow: var(--elev-1);
+      letter-spacing: .01em;
+      transition: background .16s ease, transform .08s ease, box-shadow .18s ease, filter .18s ease;
+      text-wrap: nowrap;
+    }
+    .btn:hover{
+      background: var(--btn-green-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--elev-2);
+      filter: brightness(1.03);
+    }
+    .btn:active{
+      background: var(--btn-green-active);
+      transform: translateY(1px) scale(.996);
+      box-shadow: var(--elev-1);
+      filter: none;
+    }
+    .btn:focus-visible{ outline:none; box-shadow: 0 0 0 3px var(--btn-ring), 0 0 0 6px rgba(23,122,58,.14); }
 
-/* ===== Responsive ===== */
-@media (max-width:860px){
-  .features .inner{ grid-template-columns:1fr; gap:10px; }
-  .labels{ display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
-  .label{ white-space:normal; }
-}
-</style>
+    /* ボタン内のサブテキスト（説明行）：押すと何が起きるかを明確に */
+    .btn .sub{
+      display:block;
+      font-weight: 600;
+      font-size: 12px;
+      line-height: 1.2;
+      opacity: .95;
+    }
+
+    /* 右矢印（アイコン） */
+    .btn.btn-next::after{
+      content: "➔"; font-weight: 900; font-size: 18px; line-height: 1;
+      transition: transform .16s ease;
+    }
+    .btn.btn-next:hover::after{ transform: translateX(2px); }
+
+    /* ===== Features（白カード＋極薄枠＋やわらか影） ===== */
+    .features{ display:flex; align-items:flex-start; padding-top: 12px; }
+    .features .inner{
+      width:100%;
+      display:grid; grid-template-columns: 1fr 2fr; gap:12px 28px; align-items:start;
+      background:#fff; border:1px solid var(--card-border); border-radius: var(--radius-l); box-shadow: var(--elev-1);
+      padding: 24px 24px; /* 読みやすい行間用に気持ち広め */
+    }
+    .features h2{
+      grid-column: 1 / -1;
+      font-size: var(--feat-h);
+      color: #3b4a5a; /* 少し濃くして視認性UP */
+      letter-spacing: .12em;
+      text-align: center;
+      margin-top: 2px;
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+    .labels{ display:grid; gap:10px; }
+    .label{
+      font-size: var(--feat-label);
+      font-weight: 700;
+      letter-spacing: .05em;
+      border-left: 3px solid rgba(23,122,58,.45);
+      padding-left: 8px;
+      line-height: 1.45;
+      white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+      color: #344054;
+      /* 縦のガイドは淡→濃の印象（border-imageの簡易表現） */
+      border-image: linear-gradient(to bottom, rgba(23,122,58,.45), rgba(23,122,58,.18)) 1;
+    }
+    .desc{ display:grid; gap:8px; font-size: var(--feat-p); line-height: var(--feat-line); color: var(--fg); }
+    .desc p{ margin:0; }
+
+    /* ===== Mock image（ページ最下部のイメージ） ===== */
+    .mock { margin: 48px auto 40px; padding: 0 24px; max-width: var(--max); }
+    .mock figure { margin: 0; display: grid; gap: 10px; justify-items: center; }
+    .mock .frame{
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08); /* イメージは少し強めに */
+    }
+    .mock img{ display:block; max-width:100%; height:auto; border-radius: 12px; }
+    .mock figcaption{ font-size:12px; color: var(--fg-weak); letter-spacing:.02em; text-align:center; margin-top:4px; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 860px){
+      .features .inner{ grid-template-columns:1fr; gap:10px; }
+      .labels{ grid-template-columns: 1fr 1fr; gap:8px 12px; }
+      .label{ white-space: normal; }
+    }
+    @media (min-width: 961px){
+      .viewport{ grid-template-rows: 0.55fr 0.45fr; } /* 機能紹介を少し近づける（間延び防止） */
+    }
+  </style>
+</head>
+<body>
+  <div class="viewport">
+    <!-- Hero -->
+    <header class="container hero" role="banner">
+      <p class="catch">席替え“業務”を一瞬で</p>
+      <h1 class="title">席替えさん</h1>
+
+      <!-- 主要CTA（ボタン内サブテキスト付き） -->
+      <nav class="actions" aria-label="メイン操作">
+        <a class="btn btn-next" href="./setup">
+          <span>初期設定</span>
+          <span class="sub">名簿テンプレのDLやクラス設定を行います</span>
+        </a>
+        <a class="btn btn-next" href="./seats">
+          <span>座席データ読み込み</span>
+          <span class="sub">名簿（CSV/Excel）を読み込んで席替えを開始</span>
+        </a>
+      </nav>
+    </header>
+
+    <!-- Features -->
+    <section class="container features" aria-labelledby="feature-heading">
+      <div class="inner">
+        <h2 id="feature-heading">機能紹介</h2>
+        <div class="labels" aria-label="機能項目">
+          <div class="label">全画面表示モード</div>
+          <div class="label">空席の固定設定</div>
+          <div class="label">180度回転表示</div>
+          <div class="label">一発印刷レイアウト</div>
+          <div class="label">ブラウザ完結で安心</div>
+        </div>
+        <div class="desc">
+          <p>プロジェクターに映して、クラス全員で結果を一目で確認できます。</p>
+          <p>欠席者や教室の構造に合わせた「空席」を自由に配置・固定できます。</p>
+          <p>先生側と生徒側（黒板側）の視点をワンタップで切り替え可能です。</p>
+          <p>A4 最適レイアウトで、印刷してそのまま掲示できます。</p>
+          <p>名簿データは端末内のみで処理され、サーバーへ送信されません。</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Mock image: イメージ画像（ページ最下部） -->
+  <section class="mock" aria-labelledby="mock-heading">
+    <figure>
+      <div class="frame">
+        <!-- 画像はこのHTMLと同じ階層に seats-preview.png を配置してください -->
+        <img src="./seats-preview.png"
+             alt="座席表アプリのイメージ（座席の名前表示・教卓・180度切替など）"
+             width="1000" height="650" />
+      </div>
+      <figcaption id="mock-heading">イメージ：座席表の表示サンプル</figcaption>
+    </figure>
+  </section>
+</body>
+</html>
