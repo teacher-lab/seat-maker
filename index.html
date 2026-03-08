@@ -4,7 +4,200 @@
   <meta charset="UTF-8" />
   <title>席替えさん｜教室座席表アプリ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
+  <style>/* ====== Tonal Theme: Soft Mint UI（画像のトンマナに合わせる） ====== */
+
+/* 1) パレット（ベース＝ミントグリーン） */
+:root{
+  --mint-50:  #f0f9f4;
+  --mint-100: #e6f5ee;
+  --mint-200: #d3efe3;
+  --mint-300: #b9e7d3;
+  --mint-400: #8fd9bd;
+  --mint-500: #5fcc9f;   /* 基調 */
+  --mint-600: #39bb88;   /* アクション/ホバー */
+  --mint-700: #2c9b71;   /* アクション/押下 */
+  --ink-900:  #0f172a;   /* 文字濃色 */
+  --ink-700:  #334155;   /* 見出し/ラベル */
+  --ink-500:  #64748b;   /* サブテキスト */
+
+  /* 既存トークンの置き換え（安全に上書き） */
+  --bg: var(--mint-50);
+  --fg: var(--ink-900);
+  --fg-weak: var(--ink-500);
+  --border: rgba(16,24,40,.18);
+
+  /* 角丸・影（やわらかい雰囲気） */
+  --radius: 12px;
+  --elev-1: 0 1px 2px rgba(16,24,40,.04), 0 1px 1px rgba(16,24,40,.03);
+  --elev-2: 0 6px 18px rgba(16,24,40,.08);
+
+  /* コンポーネント色 */
+  --card-bg: #fff;
+  --card-border: rgba(16,24,40,.14);
+
+  --btn-solid-bg: var(--mint-600);
+  --btn-solid-bg-hover: var(--mint-700);
+  --btn-solid-fg: #fff;
+
+  --btn-ghost-fg: var(--mint-700);
+  --btn-ghost-border: rgba(56,142,108,.35);
+  --btn-ghost-bg-hover: rgba(56,142,108,.08);
+
+  --focus-ring: 0 0 0 3px rgba(63,201,150,.28);
+}
+
+/* 2) ページ背景を淡いグラデに（上部うっすら緑→下白） */
+body{
+  background:
+    radial-gradient(1200px 320px at 50% -120px, var(--mint-100), transparent 70%),
+    linear-gradient(to bottom, var(--mint-50), #ffffff 40%);
+  color: var(--fg);
+}
+
+/* 3) ヒーローもトンマナを合わせる（うっすら帯＋アイコン風左端） */
+.hero{
+  background: linear-gradient(to bottom, rgba(143,217,189,.10), rgba(143,217,189,0) 80%);
+  border-radius: 0 0 20px 20px;
+  padding: 16px 0 12px; /* 少しだけゆとり */
+}
+.title{
+  letter-spacing:.015em;
+}
+.catch{
+  color: var(--ink-500);
+}
+
+/* 4) ボタン（濃淡2種） */
+.actions{ gap: 12px; }
+.btn{
+  border-radius: 999px;            /* pill */
+  border: 1.5px solid transparent; /* 基本は透明境界 */
+  box-shadow: var(--elev-1);
+  transition: all .14s ease;
+}
+
+/* 実線のグリーンボタン（主要） */
+.btn[href]{
+  background: var(--btn-solid-bg);
+  color: var(--btn-solid-fg);
+}
+.btn[href]:hover{
+  background: var(--btn-solid-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--elev-2);
+}
+.btn[href]:active{
+  transform: translateY(0);
+  box-shadow: var(--elev-1);
+}
+
+/* ゴースト（サブ）— 使いたいときは .btn-ghost を追加 */
+.btn-ghost{
+  background: #fff;
+  color: var(--btn-ghost-fg);
+  border-color: var(--btn-ghost-border);
+}
+.btn-ghost:hover{ background: var(--btn-ghost-bg-hover); }
+
+/* フォーカス可視 */
+.btn:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+
+/* 5) カード（Featuresの箱っぽい見た目に） */
+.features .inner{
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--elev-1);
+  padding: 18px 20px;
+}
+.features h2{
+  color: var(--ink-700);
+  letter-spacing:.12em;
+}
+.label{
+  border-left: 3px solid var(--mint-400);
+  color: var(--ink-700);
+}
+
+/* 6) フォーム/入力UI（setup.html などにも効く共通スタイル） */
+input[type="text"], input[type="number"], input[type="file"],
+textarea, select{
+  appearance: none;
+  width: 100%;
+  background: #fff;
+  color: var(--fg);
+  border: 1.5px solid rgba(16,24,40,.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), var(--elev-1);
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+}
+input::file-selector-button{
+  background: var(--mint-600);
+  color:#fff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+input:hover, textarea:hover, select:hover{
+  border-color: rgba(16,24,40,.28);
+}
+input:focus, textarea:focus, select:focus{
+  outline: none;
+  border-color: var(--mint-600);
+  box-shadow: var(--focus-ring);
+}
+
+/* 7) バッジ/小ボタン（右上の「名簿テンプレ」風） */
+.badge-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  background:#fff;
+  color: var(--mint-700);
+  border:1.5px solid rgba(56,142,108,.35);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight:700; font-size:13px;
+  box-shadow: var(--elev-1);
+}
+.badge-btn:hover{ background: rgba(56,142,108,.06); }
+
+/* 8) ページ下部のMock画像フレームも合わせる */
+.mock .frame{
+  background:#fff;
+  border:1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: var(--elev-2);
+}
+.mock figcaption{ color: var(--ink-500); }
+
+/* 9) フッター操作バー（次へ/戻る などがある場合） */
+.footer-bar{
+  position: sticky; bottom: 0;
+  background: linear-gradient(to top, rgba(255,255,255,.96), rgba(255,255,255,0));
+  backdrop-filter: saturate(140%) blur(6px);
+  padding: 10px 16px;
+  border-top: 1px solid rgba(16,24,40,.08);
+}
+
+/* 10) ダークモード（淡い色味を保ったまま反転） */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0b0f14;
+    --card-bg:#0e1319;
+    --card-border: rgba(255,255,255,.10);
+    --fg:#e5e7eb; --fg-weak:#cbd5e1;
+    --border: rgba(255,255,255,.16);
+  }
+  body{
+    background:
+      radial-gradient(1200px 320px at 50% -120px, rgba(63,201,150,.10), transparent 70%),
+      linear-gradient(to bottom, #0b1116, #0b0f14 40%);
+  }
+  .btn-ghost{ background: transparent; }
+  input, textarea, select{ background:#0f151c; color:#e5e7eb; border-color: rgba(255,255,255,.16); }
+}
     /* ===== Reset ===== */
     *,*::before,*::after{ box-sizing:border-box; }
     html,body{ height:100%; }
@@ -246,3 +439,4 @@
   </section>
 </body>
 </html>
+
