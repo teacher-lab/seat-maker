@@ -1,203 +1,313 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>席替えさん｜教室座席表アプリ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>席替えさん｜席替え業務を一瞬で</title>
+  <meta name="description" content="席替え業務を一瞬で。ブラウザ完結で安心安全。プロジェクター表示・印刷も簡単。">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
-    /* ===== Reset（最小限） ===== */
-    *,*::before,*::after{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body,h1,h2,p{ margin:0; }
-    a{ color:inherit; text-decoration:none; }
-
-    /* ===== Theme Tokens ===== */
     :root{
-      --bg: #eef7f1;
-      --fg: #0f172a;
-      --fg-weak: #667085;
+      --brand:#12b886;
+      --brand-strong:#0fa376;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --shadow:0 10px 30px rgba(2,6,23,.08);
 
-      --line: rgba(17,24,39,.12);
-      --card-border: var(--line);
-      --radius-l: 16px;
-      --elev-1: 0 1px 2px rgba(0,0,0,.05);
-      --elev-2: 0 6px 18px rgba(0,0,0,.08);
-
-      --max: 960px;
-
-      --title: clamp(54px, 9.2vw, 108px);
-      --catch: clamp(13px, 1.8vw, 16px);
-      --gap-title-actions: clamp(44px, 6.8vw, 88px);
-
-      --btn-minw: 236px;
-      --btn-pad-y: 14px;
-      --btn-pad-x: 22px;
-      --btn-fs: 16px;
-
-      --btn-green:       #177a3a;
-      --btn-green-hover: #126532;
-      --btn-green-active:#0f5529;
-      --btn-ring:        rgba(23,122,58,.28);
-
-      --feat-h: 12px;
-      --feat-label: 12px;
-      --feat-p: 12px;
-      --feat-line: 1.55;
+      --left-w:520px;
+      --right-w:560px;
+      --hero-gap:40px;
     }
 
-    /* ===== Base ===== */
-    html, body{ background: var(--bg); color: var(--fg); }
+    *{ box-sizing:border-box }
     body{
-      font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto,
-                   "Helvetica Neue","Hiragino Sans","Yu Gothic UI","Yu Gothic", Meiryo, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
+      margin:0;
+      font-family::'Noto Sans JP', sans-serif;
+      color:var(--ink);
+      background:#f4fffb;
     }
-    .container{ max-width: var(--max); margin: 0 auto; padding: 0 24px; }
-    .viewport{
-      min-height: 100svh;
-      display: grid;
-      grid-template-rows: 0.60fr 0.40fr;
+    img{ max-width:100%; height:auto; display:block }
+
+    /* 背景 */
+    .bg{
+      position:fixed; inset:0; z-index:-1;
+      background:
+        radial-gradient(70% 50% at 60% 20%, rgba(18,184,134,.12), transparent 60%),
+        url("./BK.jpg") center / cover no-repeat;
     }
 
-    /* ===== Hero ===== */
-    .hero{
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
+    /* レイアウト（←ここ重要：元に戻してる） */
+    .container{
+      max-width:1120px;
+      margin:0 auto;
+      padding:60px 24px;
+    }
+
+.hero{
+  display:grid;
+  grid-template-columns: minmax(0, var(--left-w)) minmax(0, var(--right-w));
+  justify-content:center;
+  align-items:flex-start;  /* ← これに変えるだけ！ */
+  gap: var(--hero-gap);
+}
+    @media (max-width:900px){
+      .hero{
+        grid-template-columns:1fr;
+        gap:24px;
+      }
+      .right{ order:-1 }
+    }
+
+    /* 左 */
+    .left{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
       text-align:center;
-      padding: 28px 0 18px;
-    }
-    .catch{
-      font-size: var(--catch);
-      letter-spacing: .16em;
-      color: var(--fg-weak);
-      font-weight: 600;
-      opacity: .9;
-      margin-bottom: 8px;
-    }
-    .title{
-      font-size: var(--title);
-      font-weight: 800;
-      letter-spacing: .005em;
-      line-height: 1.02;
-      text-shadow: 0 1px 0 rgba(255,255,255,.6);
-      margin-bottom: 0;
+      max-width:var(--left-w);
     }
 
-    /* ===== Buttons ===== */
-    .actions{
-      display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
-      margin-top: var(--gap-title-actions);
-    }
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:10px;
-      min-width: var(--btn-minw);
-      padding: var(--btn-pad-y) var(--btn-pad-x);
-      font-size: var(--btn-fs); font-weight: 800; line-height:1;
-      color:#fff; background: var(--btn-green);
-      border: none; border-radius: 999px;
-      box-shadow: var(--elev-1);
-      letter-spacing: .01em;
-      transition: background .16s ease, transform .08s ease, box-shadow .18s ease, filter .18s ease;
-      text-wrap: nowrap;
-    }
-    .btn:hover{ background: var(--btn-green-hover); transform: translateY(-1px); box-shadow: var(--elev-2); filter: brightness(1.03); }
-    .btn:active{ background: var(--btn-green-active); transform: translateY(1px) scale(.996); box-shadow: var(--elev-1); filter: none; }
-    .btn:focus-visible{ outline:none; box-shadow: 0 0 0 3px var(--btn-ring), 0 0 0 6px rgba(23,122,58,.14); }
-    .btn .sub{ display:block; font-weight:600; font-size:12px; line-height:1.2; opacity:.95; }
-    .btn.btn-next::after{ content: "➔"; font-weight: 900; font-size: 18px; line-height: 1; transition: transform .16s ease; }
-    .btn.btn-next:hover::after{ transform: translateX(2px); }
+    .badge{
+      display:inline-block;
+      color:var(--brand);
+      font-weight:700;
+      background:none;
+      padding:0;
+      border;none;
+         }
 
-    /* ===== Features ===== */
-    .features{ display:flex; align-items:flex-start; padding-top: 12px; }
-    .features .inner{
-      width:100%; display:grid; grid-template-columns: 1fr 2fr; gap:12px 28px; align-items:start;
-      background:#fff; border:1px solid var(--card-border); border-radius: var(--radius-l); box-shadow: var(--elev-1);
-      padding: 24px 24px;
+    h1{
+      font-size:64px;
+      line-height:1.1;
+      margin:6px 0 12px;
     }
-    .features h2{
-      grid-column: 1 / -1; font-size: var(--feat-h); color: #3b4a5a;
-      letter-spacing: .12em; text-align: center; margin: 2px 0 10px; font-weight: 800;
-    }
-    .labels{ display:grid; gap:10px; }
-    .label{
-      font-size: var(--feat-label); font-weight: 700; letter-spacing: .05em;
-      border-left: 3px solid rgba(23,122,58,.45); border-image: linear-gradient(to bottom, rgba(23,122,58,.45), rgba(23,122,58,.18)) 1;
-      padding-left: 8px; line-height: 1.45; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
-      color: #344054;
-    }
-    .desc{ display:grid; gap:8px; font-size: var(--feat-p); line-height: var(--feat-line); color: var(--fg); }
-    .desc p{ margin:0; }
 
-    /* ===== Mock image ===== */
-    .mock { margin: 48px auto 40px; padding: 0 24px; max-width: var(--max); }
-    .mock figure { margin: 0; display: grid; gap: 10px; justify-items: center; }
-    .mock .frame{ width: 100%; background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 14px; box-shadow: 0 10px 24px rgba(0,0,0,.08); }
-    .mock img{ display:block; max-width:100%; height:auto; border-radius: 12px; }
-    .mock figcaption{ font-size:12px; color: var(--fg-weak); letter-spacing:.02em; text-align:center; margin-top:4px; }
+    @media (max-width:900px){
+      h1{ font-size:44px }
+    }
 
-    /* ===== Responsive ===== */
-    @media (max-width: 860px){
-      .features .inner{ grid-template-columns:1fr; gap:10px; }
-      .labels{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 12px; }
-      .label{ white-space: normal; }
+    .subtitle{
+      color:var(--muted);
+      line-height:1.8;
+      margin:0 0 22px;
     }
-    @media (min-width: 961px){
-      .viewport{ grid-template-rows: 0.55fr 0.45fr; }
+
+.cta{
+  display:inline-block;
+  background:var(--brand);
+  color:#fff;
+  font-weight:800;
+  font-size:24px;
+  padding:10px 110px;  /* ← 48 → 64 に拡張 */
+  border-radius:16px;
+  text-decoration:none;
+  box-shadow:var(--shadow);
+}hover{ background:var(--brand-strong) 
+transition:transform .15s ease, opacity .2s ease;
+}
+/* ② ホバーで浮く */
+.cta:hover{
+  transform:translateY(-3px);
+  box-shadow:0 16px 32px rgba(0,0,0,0.15);
+}
+
+/* ① クリックで縮む */
+.cta:active{
+  transform:scale(0.95);
+}
+
+/* ⑥ 押したあと消える（遷移用） */
+.cta.clicked{
+  transform:scale(0.9);
+  opacity:0;
+}
+/* JS用クラス */
+.cta.clicked{
+  transform:scale(0.9);
+  opacity:0.6;
+}
+
+    /* 右（SVG） */
+    .svg-wrap{
+  max-width:var(--right-w);
+  width:100%;
+  margin:0;
+}
+
+.right{
+  transform: translateY(-20px);
+}
+.right{
+  margin-top:-20px;
+}
+
+@media (max-width:900px){
+  .right{
+    margin-top:0;
+  }
+}
+    .pc-svg{
+      width:100%;
+      height:auto;
     }
+
+    /* 特徴カード */
+    .features{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:16px 20px;
+      list-style:none;
+      margin:18px 0 0;
+      padding:0;
+    }
+
+    .feature{
+      display:grid;
+      grid-template-columns:56px 1fr;
+      align-items:center;
+      gap:12px;
+      padding:14px 16px;
+      border-radius:14px;
+      background:rgba(255,255,255,.96);
+      box-shadow:var(--shadow);
+      border:1px solid rgba(2,6,23,.06);
+    }
+
+    .feature .icon{
+      width:56px; height:56px;
+      border-radius:50%;
+      background:rgba(18,184,134,.12);
+      display:grid; place-items:center;
+    }
+
+    .feature .icon img{
+      width:28px; height:28px;
+    }
+
+    .feature h3{
+      font-size:16px;
+      margin:0 0 2px;
+    }
+
+    .feature p{
+      font-size:13px;
+      color:var(--muted);
+      margin:0;
+    }
+
+    @media (max-width:900px){
+      .svg-wrap{
+        margin:0 auto;
+        max-width:min(92vw, 760px);
+      }
+
+      .features{
+        grid-template-columns:1fr;
+        gap:12px;
+      }
+
+      .feature{
+        grid-template-columns:48px 1fr;
+      }
+
+      .feature .icon{
+        width:48px;
+        height:48px;
+      }
+
+      .feature .icon img{
+        width:24px;
+        height:24px;
+      }
+    }
+
+    @media print{
+      .bg{ display:none }
+    }
+/* 広告エリアのスタイル */
+.ad-container {
+  margin-top: 40px; /* ボタンとの距離 */
+  width: 100%;
+  max-width: 400px; /* 広告の最大幅を制限（お好みで） */
+  text-align: center;
+}
+
+/* スマホ表示の時は余白を調整 */
+@media (max-width:900px){
+  .ad-container {
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+}
   </style>
 </head>
+
 <body>
-  <div class="viewport">
-    <!-- Hero -->
-    <header class="container hero" role="banner">
-      <p class="catch">席替え“業務”を一瞬で</p>
-      <h1 class="title">席替えさん</h1>
+  <div class="bg"></div>
 
-      <!-- 主要CTA（※ a タグは必ず開閉ペアで） -->
-      <nav class="actions" aria-label="メイン操作">
-        <a class="btn btn-next" href="./setup">
-          <span>はじめる</span>
-        </a>
-        <a class="btn btn-next" href="./seats">
-          <span>座席データ読み込み</span>
-        </a>
-      </nav>
-    </header>
+  <main class="container">
+    <section class="hero">
 
-    <!-- Features -->
-    <section class="container features" aria-labelledby="feature-heading">
-      <div class="inner">
-        <h2 id="feature-heading">機能紹介</h2>
-        <div class="labels" aria-label="機能項目">
-          <div class="label">全画面表示モード</div>
-          <div class="label">空席の固定設定</div>
-          <div class="label">180度回転表示</div>
-          <div class="label">一発印刷レイアウト</div>
-          <div class="label">ブラウザ完結で安心</div>
-        </div>
-        <div class="desc">
-          <p>プロジェクターに映して、クラス全員で結果を一目で確認できます。</p>
-          <p>欠席者や教室の構造に合わせた「空席」を自由に配置・固定できます。</p>
-          <p>先生側と生徒側（黒板側）の視点をワンタップで切り替え可能です。</p>
-          <p>A4 最適レイアウトで、印刷してそのまま掲示できます。</p>
-          <p>名簿データは端末内のみで処理され、サーバーへ送信されません。</p>
-        </div>
-      </div>
-    </section>
+      <!-- 左 -->
+      <div class="left">
+        <span class="badge">席替え業務を一瞬で</span>
+        <h1>席替えさん</h1>
+        <p class="subtitle">
+          ブラウザ完結で安心安全<br>
+          プロジェクター表示・印刷も簡単♪
+        </p>
+        <a href="setup.html" class="cta">はじめる</a>
+<div class="ad-container">
+    <p style="font-size:10px; color:#94a3b8; margin-bottom:4px;">スポンサーリンク</p>
+    <div style="width:100%; min-height:250px; background:rgba(255,255,255,0.5); border-radius:8px; display:grid; place-items:center;">
+       <ins class="adsbygoogle" ...></ins>
+    </div>
   </div>
-
-  <!-- Mock image: イメージ画像（ページ最下部） -->
-  <section class="mock" aria-labelledby="mock-heading">
-    <figure>
-      <div class="frame">
-        <img src="./seats-preview.png"
-             alt="座席表のイメージ（通常シートと180°回転シートの切り替え、教卓、各席の名前表示）"
-             width="1000" height="650" />
       </div>
-      <figcaption id="mock-heading">イメージ：座席表の表示サンプル</figcaption>
-    </figure>
-  </section>
+
+      <!-- 右 -->
+      <div class="right">
+        <div class="svg-wrap">
+          <img src="./pc.svg" class="pc-svg">
+        </div>
+
+        <ul class="features">
+          <li class="feature">
+            <div class="icon"><img src="./icons/full.svg"></div>
+            <div>
+              <h3>全画面表示</h3>
+              <p>スクリーン投影に最適</p>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="icon"><img src="./icons/rotate.svg"></div>
+            <div>
+              <h3>180°回転</h3>
+              <p>先生視点の名簿が一瞬で</p>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="icon"><img src="./icons/shield.svg"></div>
+            <div>
+              <h3>ブラウザ完結</h3>
+              <p>データは端末内で安心</p>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="icon"><img src="./icons/fixed.svg"></div>
+            <div>
+              <h3>空席固定</h3>
+              <p>自由にレイアウト可能</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </section>
+  </main>
+
 </body>
 </html>
-
-
