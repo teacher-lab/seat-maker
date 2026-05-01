@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ja">
+<head>
+
+  <script>
+    // ランディング（index.html）に来た事実をセッションに記録
+    sessionStorage.setItem('visited_landing_v1', '1');
+  </script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>席替えさん｜席替え業務を一瞬で</title>
+  <meta name="description" content="席替え業務を一瞬で。ブラウザ完結で安心安全。プロジェクター表示・印刷も簡単。">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#12b886;
+      --brand-strong:#0fa376;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --shadow:0 10px 30px rgba(2,6,23,.08);
+
+      --left-w:520px;
+      --right-w:560px;
+      --hero-gap:40px;
+    }
+
+    *{ box-sizing:border-box }
+    body{
+      margin:0;
+      font-family::'Noto Sans JP', sans-serif;
+      color:var(--ink);
+      background:#f4fffb;
+    }
+    img{ max-width:100%; height:auto; display:block }
+
+    /* 背景 */
+    .bg{
+      position:fixed; inset:0; z-index:-1;
+      background:
+        radial-gradient(70% 50% at 60% 20%, rgba(18,184,134,.12), transparent 60%),
+        url("./BK.jpg") center / cover no-repeat;
+    }
+
+    /* レイアウト（←ここ重要：元に戻してる） */
+    .container{
+      max-width:1120px;
+      margin:0 auto;
+      padding:60px 24px;
+    }
+
+.hero{
+  display:grid;
+  grid-template-columns: minmax(0, var(--left-w)) minmax(0, var(--right-w));
+  justify-content:center;
+  align-items:flex-start;  /* ← これに変えるだけ！ */
+  gap: var(--hero-gap);
+}
+    @media (max-width:900px){
+      .hero{
+        grid-template-columns:1fr;
+        gap:24px;
+      }
+      .right{ order:-1 }
+    }
+
+    /* 左 */
+    .left{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      max-width:var(--left-w);
+    }
+
+    .badge{
+      display:inline-block;
+      color:var(--brand);
+      font-weight:700;
+      background:none;
+      padding:0;
+      border;none;
+         }
+
+    h1{
+      font-size:64px;
+      line-height:1.1;
+      margin:6px 0 12px;
+    }
+
+    @media (max-width:900px){
+      h1{ font-size:44px }
+    }
+
+    .subtitle{
+      color:var(--muted);
+      line-height:1.8;
+      margin:0 0 22px;
+    }
+
+.cta{
+  display:inline-block;
+  background:var(--brand);
+  color:#fff;
+  font-weight:800;
+  font-size:24px;
+  padding:10px 110px;  /* ← 48 → 64 に拡張 */
+  border-radius:16px;
+  text-decoration:none;
+  box-shadow:var(--shadow);
+}hover{ background:var(--brand-strong) 
+transition:transform .15s ease, opacity .2s ease;
+}
+/* ② ホバーで浮く */
+.cta:hover{
+  transform:translateY(-3px);
+  box-shadow:0 16px 32px rgba(0,0,0,0.15);
+}
+
+/* ① クリックで縮む */
+.cta:active{
+  transform:scale(0.95);
+}
+
+/* ⑥ 押したあと消える（遷移用） */
+.cta.clicked{
+  transform:scale(0.9);
+  opacity:0;
+}
+/* JS用クラス */
+.cta.clicked{
+  transform:scale(0.9);
+  opacity:0.6;
+}
+
+    /* 右（SVG） */
+    .svg-wrap{
+  max-width:var(--right-w);
+  width:100%;
+  margin:0;
+}
+
+.right{
+  transform: translateY(-20px);
+}
+.right{
+  margin-top:-20px;
+}
+
+@media (max-width:900px){
+  .right{
+    margin-top:0;
+  }
+}
+    .pc-svg{
+      width:100%;
+      height:auto;
+    }
+
+    /* 特徴カード */
+    .features{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:16px 20px;
+      list-style:none;
+      margin:18px 0 0;
+      padding:0;
+    }
+
+    .feature{
+      display:grid;
+      grid-template-columns:56px 1fr;
+      align-items:center;
+      gap:12px;
+      padding:14px 16px;
+      border-radius:14px;
+      background:rgba(255,255,255,.96);
+      box-shadow:var(--shadow);
+      border:1px solid rgba(2,6,23,.06);
+    }
+
+    .feature .icon{
+      width:56px; height:56px;
+      border-radius:50%;
+      background:rgba(18,184,134,.12);
+      display:grid; place-items:center;
+    }
+
+    .feature .icon img{
+      width:28px; height:28px;
+    }
+
+    .feature h3{
+      font-size:16px;
+      margin:0 0 2px;
+    }
+
+    .feature p{
+      font-size:13px;
+      color:var(--muted);
+      margin:0;
+    }
+
+    @media (max-width:900px){
+      .svg-wrap{
+        margin:0 auto;
+        max-width:min(92vw, 760px);
+      }
+
+      .features{
+        grid-template-columns:1fr;
+        gap:12px;
+      }
+
+      .feature{
+        grid-template-columns:48px 1fr;
+      }
+
+      .feature .icon{
+        width:48px;
+        height:48px;
+      }
+
+      .feature .icon img{
+        width:24px;
+        height:24px;
+      }
+    }
+
+    @media print{
+      .bg{ display:none }
+    }
+/* 広告エリアのスタイル */
+.ad-container {
+  margin-top: 40px; /* ボタンとの距離 */
+  width: 100%;
+  max-width: 400px; /* 広告の最大幅を制限（お好みで） */
+  text-align: center;
+}
+
+/* スマホ表示の時は余白を調整 */
+@media (max-width:900px){
+  .ad-container {
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+}
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <main class="container">
+    <section class="hero">
+
+      <!-- 左 -->
+      <div class="left">
+        <span class="badge">席替え業務を一瞬で</span>
+        <h1>席替えさん</h1>
+        <p class="subtitle">
+          ブラウザ完結で安心安全<br>
+          プロジェクター表示・印刷も簡単♪
+        </p>
+        <a href="setup.html" class="cta">はじめる</a>
+<div class="ad-container">
+    <p style="font-size:10px; color:#94a3b8; margin-bottom:4px;">スポンサーリンク</p>
+    <div style="width:100%; min-height:250px; background:rgba(255,255,255,0.5); border-radius:8px; display:grid; place-items:center;">
+       <ins class="adsbygoogle" ...></ins>
+    </div>
+  </div>
+      </div>
+
+      <!-- 右 -->
+      <div class="right">
+        <div class="svg-wrap">
+          <img src="./pc.svg" class="pc-svg">
+        </div>
+
+        <ul class="features">
+          <li class="feature">
+            <div class="icon"><img src="./icons/full.svg"></div>
+            <div>
+              <h3>全画面表示</h3>
+              <p>スクリーン投影に最適</p>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="icon"><img src="./icons/rotate.svg"></div>
+            <div>
+              <h3>180°回転</h3>
+              <p>先生視点の名簿が一瞬で</p>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="icon"><img src="./icons/shield.svg"></div>
+            <div>
+              <h3>ブラウザ完結</h3>
+              <p>データは端末内で安心</p>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="icon"><img src="./icons/fixed.svg"></div>
+            <div>
+              <h3>空席固定</h3>
+              <p>自由にレイアウト可能</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </section>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+# robots.txt for 席替えシート
+User-agent: *
+Allow: /
+
+# 必要に応じて除外パスを追加
+# Disallow: /admin/
+
+# サイトマップ（設置する場合はURLを指定）
+# Sitemap: https://example.com/sitemap.xml
